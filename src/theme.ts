@@ -7,15 +7,9 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: { main: BRAND_BLUE },
-    background: {
-      default: "#f8fafc", // nền trang rất nhạt
-      paper: "#ffffff",   // card/header/footer
-    },
-    text: {
-      primary: "#0f172a",   // slate-900
-      secondary: "#64748b", // slate-500
-    },
-    divider: "#e5e7eb", // đường kẻ mảnh
+    background: { default: "#f8fafc", paper: "#ffffff" },
+    text: { primary: "#0f172a", secondary: "#64748b" },
+    divider: "#e5e7eb",
   },
 
   shape: { borderRadius: 10 },
@@ -39,7 +33,6 @@ const theme = createTheme({
       }),
     },
 
-    // AppBar header: nền trắng, viền dưới mảnh
     MuiAppBar: {
       defaultProps: { elevation: 0, color: "inherit" },
       styleOverrides: {
@@ -51,10 +44,17 @@ const theme = createTheme({
       },
     },
 
-    // Button: pill cho Login, outlined nhạt cho Register
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 9999, height: 40, paddingInline: 16 },
+        root: {
+          borderRadius: 9999,
+          height: 40,
+          paddingInline: 16,
+          // tăng specificity để thắng global .uppercase (không cần !important)
+          "&&": { textTransform: "none" as const },
+          // phòng trường hợp chữ trong span con bị ảnh hưởng
+          "& *": { textTransform: "none" as const },
+        },
         containedPrimary: ({ theme }) => ({
           boxShadow: "none",
           "&:hover": {
@@ -75,43 +75,31 @@ const theme = createTheme({
       },
     },
 
-    // OutlinedInput: viền mảnh, radius lớn (ô search)
     MuiOutlinedInput: {
       styleOverrides: {
         root: ({ theme }) => ({
           borderRadius: 9999,
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: theme.palette.divider,
-          },
-          "&:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: theme.palette.divider,
-          },
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.divider },
+          "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: theme.palette.divider },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: theme.palette.primary.main,
             boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.15)}`,
           },
         }),
-        input: { paddingBlock: 11 }, // cao ~44px
+        input: { paddingBlock: 11 },
       },
     },
 
-    // Link: giống ảnh – chỉ gạch khi hover
-    MuiLink: {
-      defaultProps: { underline: "hover", color: "inherit" },
-    },
+    MuiLink: { defaultProps: { underline: "hover", color: "inherit" } },
 
-    // Paper/Card: border + shadow nhẹ giống card đăng nhập
     MuiPaper: {
       styleOverrides: {
-        outlined: ({ theme }) => ({
-          borderColor: theme.palette.divider,
-        }),
-        elevation1: ({ theme }) => ({
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow: `0 10px 20px -10px ${alpha("#111827", 0.15)}, 0 6px 12px -6px ${alpha(
-            "#111827",
-            0.1
-          )}`,
+        outlined: ({ theme }) => ({ borderColor: theme.palette.divider }),
+        elevation1: () => ({
+          border: `1px solid #e5e7eb`,
+          boxShadow:
+            `0 10px 20px -10px ${alpha("#111827", 0.15)}, ` +
+            `0 6px 12px -6px ${alpha("#111827", 0.1)}`,
         }),
       },
     },
