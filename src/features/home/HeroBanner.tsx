@@ -127,6 +127,15 @@ export default function HeroBanner() {
                   bgcolor: t.palette.background.paper,
                   border: `1px solid ${t.palette.divider}`,
                   display: { xs: "none", md: "flex" },
+                  transition: "all 0.1s ease",
+                  "&:hover": {
+                    color: "#fff",
+                    transform: "translateY(-50%) scale(1.05)",
+                  },
+                  "&:active": {
+                    color: "#fff",
+                    transform: "translateY(-50%) scale(0.95)",
+                  },
                 })}
               >
                 <ChevronLeft />
@@ -142,6 +151,15 @@ export default function HeroBanner() {
                   bgcolor: t.palette.background.paper,
                   border: `1px solid ${t.palette.divider}`,
                   display: { xs: "none", md: "flex" },
+                                    transition: "all 0.1s ease",
+                  "&:hover": {
+                    color: "#fff",
+                    transform: "translateY(-50%) scale(1.05)",
+                  },
+                  "&:active": {
+                    color: "#fff",
+                    transform: "translateY(-50%) scale(0.95)",
+                  },
                 })}
               >
                 <ChevronRight />

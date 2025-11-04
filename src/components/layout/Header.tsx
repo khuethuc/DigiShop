@@ -1,4 +1,3 @@
-// src/components/layout/Header.tsx
 "use client";
 
 import {
@@ -12,149 +11,177 @@ import {
   OutlinedInput,
   InputAdornment,
   Container,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
-import { Search, ShoppingCart, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, Menu, ChevronDown } from "lucide-react";
 import NextLink from "next/link";
 import Image from "next/image";
 import logo from "public/logo.png";
+import { useEffect, useState } from "react";
+import SearchBar from "src/components/header/SearchBar";
+import CardButton from "src/components/header/CardButton";
 
 export default function Header() {
+  const [scrolled, setScrolled] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <AppBar
       position="sticky"
       color="inherit"
-      elevation={0}
+      elevation={scrolled ? 3 : 0}
       sx={(theme) => ({
-        bgcolor: "background.paper",
-        borderBottom: `1px solid ${theme.palette.divider}`,
-      })}
+    transition: "all 0.5s ease",
+    backdropFilter: scrolled ? "blur(20px)" : "none",
+    WebkitBackdropFilter: scrolled ? "blur(20px)" : "none", // ✅ for Safari
+    bgcolor: scrolled ? "rgba(255, 255, 255, 0.9)" : "background.paper",
+    borderBottom: scrolled
+      ? "0.3px solid rgba(255,255,255,0.1)"
+      : `1px solid ${theme.palette.divider}`,
+  })}
     >
-      <Container maxWidth="xl" disableGutters>
+      {/* <Container maxWidth="xl" disableGutters> */}
         <Toolbar sx={{ minHeight: 88, gap: 2, px: { xs: 2, md: 3 } }}>
-          {/* Logo */}
+          {/* Left: Logo */}
           <NextLink
             href="/"
             aria-label="Go to home"
             style={{
               display: "inline-flex",
               alignItems: "center",
-              marginRight: 16,
+              margin: 10,
             }}
           >
-            <Image src={logo} alt="DigiShop" width={80} height={80} priority />
+            <Image src={logo} alt="DigiShop" width={70} height={70} priority />
           </NextLink>
 
-          {/* Nav links */}
+          {/* Middle: Nav links (hidden on mobile) */}
           <Stack
             direction="row"
             spacing={4}
-            sx={{ alignItems: "center", color: "text.primary", mr: 2 }}
+            sx={{
+              alignItems: "center",
+              color: "text.primary",
+              flexGrow: 1,
+              display: { xs: "none", md: "flex" },
+            }}
           >
-            <MLink
-              underline="none"
-              color="inherit"
-              href="#"
-              sx={{ fontSize: 18 }}
-            >
+            <MLink underline="none" color="inherit" href="/" sx={linkStyle}>
               Home
             </MLink>
+
             <MLink
               underline="none"
               color="inherit"
-              href="#"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.5,
-                fontSize: 18,
-              }}
+              href="/products"
+              sx={{ ...linkStyle, display: "inline-flex", alignItems: "center", gap: 0.5 }}
             >
-              Products <ChevronDown size={18} />
+              Products
+              <ChevronDown size={18} />
             </MLink>
-            <MLink
-              underline="none"
-              color="inherit"
-              href="#"
-              sx={{ fontSize: 18 }}
-            >
+
+            <MLink underline="none" color="inherit" href="#" sx={linkStyle}>
               Best Sellers
             </MLink>
-            <MLink
-              underline="none"
-              color="inherit"
-              href="#"
-              sx={{ fontSize: 18 }}
-            >
+
+            <MLink underline="none" color="inherit" href="/how-to-buy" sx={linkStyle}>
               How to Buy
             </MLink>
           </Stack>
 
-          {/* Search pill */}
-          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <OutlinedInput
-              placeholder=" "
-              startAdornment={
-                <InputAdornment position="start">
-                  <Search size={20} />
-                </InputAdornment>
-              }
-              sx={{
-                width: "min(620px, 100%)",
-                height: 48,
-                px: 2,
-                borderRadius: 9999,
-                bgcolor: "background.paper",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "divider",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "divider",
-                },
-              }}
-            />
+          {/* Mobile: Menu button */}
+          <Box sx={{ display: { xs: "flex", md: "none" } }}>
+            <IconButton onClick={() => setOpenDrawer(true)}>
+              <Menu />
+            </IconButton>
           </Box>
 
-          {/* Right actions */}
-          <IconButton aria-label="cart" sx={{ color: "text.primary", mx: 1 }}>
-            <ShoppingCart />
-          </IconButton>
+          {/* Search */}
+          <Box
+            sx={{
+              flex: 2,
+              justifyContent: "center",
+            }}
+          >
+            <SearchBar/>
+          </Box>
 
-          <Stack direction="row" spacing={1.5}>
+          {/* Right side: Cart + Auth buttons (ALWAYS visible) */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <CardButton />
+
             <Button
               variant="contained"
               color="primary"
               sx={{
                 borderRadius: 9999,
-                px: 3,
-                height: 46,
+                px: { xs: 2, md: 3 },
+                height: { xs: 40, md: 46 },
                 fontWeight: 800,
                 textTransform: "none",
                 boxShadow: "0 6px 14px rgba(44,127,255,0.25)",
+                fontSize: { xs: 14, md: 16 },
               }}
             >
               Login
             </Button>
+
             <Button
               variant="outlined"
               sx={(theme) => ({
                 borderRadius: 9999,
-                px: 3,
-                height: 46,
+                px: { xs: 2, md: 3 },
+                height: { xs: 40, md: 46 },
                 borderColor: theme.palette.divider,
                 textTransform: "none",
                 color: "text.primary",
                 bgcolor: "background.paper",
-                "&:hover": {
-                  borderColor: theme.palette.divider,
-                  bgcolor: "background.default",
-                },
+                fontSize: { xs: 14, md: 16 },
               })}
             >
               Register
             </Button>
           </Stack>
         </Toolbar>
-      </Container>
+      {/* </Container> */}
+
+      {/* Drawer (for small screen nav links) */}
+      <Drawer anchor="left" open={openDrawer} onClose={() => setOpenDrawer(false)}>
+        <Box sx={{ width: 250, p: 2 }}>
+          <List>
+            {[
+              { text: "Home", href: "/" },
+              { text: "Products", href: "/products" },
+              { text: "Best Sellers", href: "#" },
+              { text: "How to Buy", href: "/how-to-buy" },
+            ].map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton component={NextLink} href={item.href}>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
     </AppBar>
   );
 }
+
+const linkStyle = {
+  fontSize: 18,
+  transition: "color 0.3s ease",
+  "&:hover": {
+    color: "#88DEF1",
+  },
+};

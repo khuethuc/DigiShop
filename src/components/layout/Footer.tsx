@@ -9,8 +9,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Mail, Phone } from "lucide-react";
-import NextLink from "next/link";
+import { Mail, Phone, Copyright, MapPin } from "lucide-react";
 import Image from "next/image";
 import logo from "public/logo.png";
 
@@ -18,148 +17,237 @@ export default function Footer() {
   const theme = useTheme();
   const mdUp = useMediaQuery(theme.breakpoints.up("md"));
   const iconSize = mdUp ? 20 : 18;
+  const currentYear = new Date().getFullYear();
 
   return (
     <Box
       component="footer"
-      sx={(t) => ({
+      sx={{
         bgcolor: "background.paper",
-        borderTop: `1px solid ${t.palette.divider}`,
-      })}
+        borderTop: (t) => `1px solid ${t.palette.divider}`,
+        pt: { xs: 3, md: 5 },
+        pb: { xs: 1, md: 2 },
+      }}
     >
-      <Container maxWidth="xl" disableGutters>
-        <Box sx={{ px: { xs: 2, md: 3 }, py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="xl">
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={{ xs: 4, md: 6 }}
+          alignItems={{ xs: "center", md: "flex-start" }}
+          justifyContent="space-between"
+        >
+          {/* Brand */}
+          <Box
+            sx={{
+              width: { xs: 160, md: 180 },
+              height: "100%",
+              position: "relative",
+              flexShrink: 0,
+            }}
+          >
+            <Image
+              src={logo}
+              alt="DigiShop"
+              style={{
+                objectFit: "contain",
+              }}
+            />
+          </Box>
+
+          {/* Columns */}
           <Box
             sx={{
               display: "grid",
-              alignItems: "flex-start",
-              rowGap: { xs: 3, md: 4 },
-              columnGap: { xs: 2, md: 2 },
+              width: "100%",
               gridTemplateColumns: {
-                xs: "1fr",
-                md: "auto 1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
               },
+              gap: { xs: 3, sm: 4, md: 5 },
             }}
           >
-            {/* Brand */}
+            {/* Introduction */}
             <Box>
-              <Stack alignItems="flex-start" spacing={1}>
-                <NextLink
-                  href="/"
-                  aria-label="Go to home"
-                  style={{ display: "inline-flex", alignItems: "center" }}
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  mb: 2,
+                  fontSize: { xs: 18, md: 20 },
+                  color: "text.primary",
+                }}
+              >
+                Introduction
+              </Typography>
+
+              <Stack spacing={1.5}>
+                <MLink
+                  href="/how-to-buy"
+                  underline="none"
+                  color="text.primary"
+                  sx={{
+                    fontSize: { xs: 15, md: 17 },
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: "#88DEF1" },
+                  }}
                 >
-                  <Image
-                    src={logo}
-                    alt="DigiShop"
-                    width={140}
-                    height={140}
-                    priority
-                  />
-                </NextLink>
+                  How to Buy
+                </MLink>
+
+                <Box>
+                  <Typography
+                    color="text.primary"
+                    sx={{ fontSize: { xs: 15, md: 17 } }}
+                  >
+                    Payment Methods
+                  </Typography>
+                  <Stack direction="row" spacing={2} mt={1}>
+                    <Image src="/momo-pay.png" alt="MoMo" width={70} height={25}/>
+                    <Image src="/vnpay.jpg" alt="VNPay" width={80} height={25} />
+                  </Stack>
+                </Box>
+
+                <MLink
+                  href="/terms"
+                  underline="none"
+                  color="text.primary"
+                  sx={{
+                    fontSize: { xs: 15, md: 17 },
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: "#88DEF1" },
+                  }}
+                >
+                  Terms of Use
+                </MLink>
               </Stack>
             </Box>
 
-            {/* Introduction & Contact */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "minmax(200px, 320px) minmax(260px, 1fr)",
-                  md: "minmax(220px, 340px) minmax(300px, 1fr)",
-                },
-                columnGap: { xs: 1, sm: 1.5, md: 2 },
-                rowGap: { xs: 3, sm: 0 },
-                alignItems: "start",
-              }}
-            >
-              {/* Introduction */}
-              <Box>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    mb: 0.75,
-                    color: "text.primary",
-                    fontSize: { xs: 22, md: 28 },
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Introduction
-                </Typography>
-                <Stack spacing={0.75}>
-                  <MLink
-                    href="/how-to-buy"
-                    underline="none"
-                    color="text.primary"
-                    sx={{ fontSize: { xs: 16, md: 18 } }}
-                  >
-                    How to Buy
-                  </MLink>
-                  <MLink
-                    href="/payment-methods"
-                    underline="none"
-                    color="text.primary"
-                    sx={{ fontSize: { xs: 16, md: 18 } }}
-                  >
-                    Payment Methods
-                  </MLink>
-                  <MLink
-                    href="/terms"
-                    underline="none"
-                    color="text.primary"
-                    sx={{ fontSize: { xs: 16, md: 18 } }}
-                  >
-                    Terms of Use
-                  </MLink>
-                </Stack>
-              </Box>
+            {/* Contact Info */}
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  mb: 2,
+                  fontSize: { xs: 18, md: 20 },
+                  color: "text.primary",
+                }}
+              >
+                Contact Information
+              </Typography>
 
-              {/* Contact */}
-              <Box>
-                <Typography
+              <Typography
+                sx={{
+                  fontSize: { xs: 15, md: 17 },
+                  mb: 1.5,
+                  fontWeight: 600,
+                }}
+              >
+                HCMUTE-Group Company
+              </Typography>
+
+              <Stack spacing={1} sx={{ color: "text.primary" }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Phone size={iconSize} />
+                  <MLink
+                    href="tel:0123456789"
+                    underline="none"
+                    color="inherit"
+                    sx={{ fontSize: { xs: 15, md: 17 } }}
+                  >
+                    0123456789
+                  </MLink>
+                </Stack>
+
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Mail size={iconSize} />
+                  <MLink
+                    href="mailto:contact@digishop.com"
+                    underline="none"
+                    color="inherit"
+                    sx={{ fontSize: { xs: 15, md: 17 } }}
+                  >
+                    contact@digishop.com
+                  </MLink>
+                </Stack>
+
+                <Stack direction="row" alignItems="flex-start" spacing={1}>
+                  <MapPin size={20} style={{ minWidth: 20, minHeight: 20 }} />
+                  <Typography
+                    sx={{ fontSize: { xs: 15, md: 17 }, lineHeight: 1.5 }}
+                  >
+                    268 Ly Thuong Kiet, Dien Hong Ward, Ho Chi Minh City, Vietnam
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Box>
+
+            {/* Socials */}
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 700,
+                  mb: 2,
+                  fontSize: { xs: 18, md: 20 },
+                  color: "text.primary",
+                }}
+              >
+                Follow us on
+              </Typography>
+              <Stack direction="row" spacing={1.5}>
+                <MLink
+                  href="https://facebook.com/DigiShop"
+                  target="_blank"
+                  rel="noopener"
+                  underline="none"
                   sx={{
-                    fontWeight: 700,
-                    mb: 0.75,
+                    display: "flex",
+                    alignItems: "center",
                     color: "text.primary",
-                    fontSize: { xs: 22, md: 28 },
-                    lineHeight: 1.2,
+                    transition: "transform 0.2s ease",
+                    "&:hover": {
+                      color: theme.palette.primary.main,
+                      transform: "scale(1.05)",
+                    },
                   }}
                 >
-                  Contact Information
-                </Typography>
-                <Stack spacing={0.75} sx={{ color: "text.primary" }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Phone size={iconSize} />
-                    <MLink
-                      href="tel:0123456789"
-                      underline="none"
-                      color="inherit"
-                      sx={{ fontSize: { xs: 16, md: 18 } }}
-                    >
-                      0123456789
-                    </MLink>
-                  </Stack>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Mail size={iconSize} />
-                    <MLink
-                      href="mailto:contact@digishop.com"
-                      underline="none"
-                      color="inherit"
-                      sx={{ fontSize: { xs: 16, md: 18 } }}
-                    >
-                      contact@digishop.com
-                    </MLink>
-                  </Stack>
-                </Stack>
-              </Box>
+                  <Image
+                    src="/facebook.png"
+                    alt="Facebook"
+                    width={35}
+                    height={35}
+                  />
+                </MLink>
+              </Stack>
             </Box>
           </Box>
+        </Stack>
+
+        {/* Copyright */}
+        <Box
+          sx={{
+            borderTop: "1px solid",
+            borderColor: "divider",
+            mt: { xs: 4, md: 5 },
+            pt: { xs: 2, md: 3 },
+            textAlign: "center",
+          }}
+        >
+          <Typography
+            sx={{
+              fontSize: { xs: 14, md: 16 },
+              color: "text.secondary",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.75,
+            }}
+          >
+            <Copyright size={16} />
+            {currentYear} DigiShop. All rights reserved.
+          </Typography>
         </Box>
       </Container>
-
-      {/* Footer line */}
-      <Box sx={(t) => ({ height: 2, bgcolor: "grey" })} />
     </Box>
   );
 }
