@@ -8,28 +8,28 @@ import CarouselDots from "../../components/CarouselDots";
 // ===== MOCK DATA =====
 const items = [
   {
-    image: "/images/ai-worlds.jpg",
+    image: "/ai-world.png",
     title: "AI Worlds",
     caption: "Siêu tối ưu",
   },
   {
-    image: "/images/streaming.jpg",
+    image: "/video-streaming.webp",
     title: "Streaming",
     caption: "Netflix/Disney+",
   },
   {
-    image: "/images/tools.jpg",
-    title: "Productivity",
-    caption: "Tools & Utilities",
+    image: "/design.png",
+    title: "Design",
+    caption: "Design Tools",
   },
-  { image: "/images/gaming.jpg", title: "Gaming", caption: "Steam, Xbox" },
+  { image: "/games.png", title: "Gaming", caption: "Steam, Xbox" },
   {
-    image: "/images/music.jpg",
+    image: "/music.jpg",
     title: "Music",
     caption: "Spotify/Apple Music",
   },
   {
-    image: "/images/edu.jpg",
+    image: "/learning.webp",
     title: "Education",
     caption: "Learning Platforms",
   },
