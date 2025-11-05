@@ -28,7 +28,7 @@ export default function BestSellers() {
           <Typography variant="h6" fontWeight={800}>
             Best Sellers
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body1" color="text.secondary">
             A selection of trending items you might love.
           </Typography>
         </Stack>

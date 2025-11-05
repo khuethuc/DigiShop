@@ -62,7 +62,7 @@ export default function ExploreProducts() {
         <Typography variant="h6" fontWeight={800}>
           Explore Our Products
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body1" color="text.secondary">
           Discover premium digital accounts and services — instantly delivered,
           secure, and always available.
         </Typography>

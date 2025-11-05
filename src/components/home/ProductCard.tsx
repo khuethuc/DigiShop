@@ -38,7 +38,7 @@ export default function ProductCard({
             {title}
           </Typography>
           {subtitle && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body1" color="text.secondary">
               {subtitle}
             </Typography>
           )}
@@ -46,7 +46,7 @@ export default function ProductCard({
             <Typography fontWeight={800}>{price}</Typography>
             {oldPrice && (
               <Typography
-                variant="body2"
+                variant="body1"
                 color="text.disabled"
                 sx={{ textDecoration: "line-through" }}
               >

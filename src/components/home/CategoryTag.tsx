@@ -80,7 +80,7 @@ export default function CategoryTag({
           </Typography>
           {caption && (
             <Typography
-              variant="body2"
+              variant="body1"
               color="text.secondary"
               align="center"
               sx={{ mt: 0.25 }}
