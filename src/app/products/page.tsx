@@ -1,4 +1,3 @@
-// app/products/page.tsx
 import { Suspense } from "react";
 import Link from "next/link";
 import { Pagination, Stack, Box, Skeleton } from "@mui/material";

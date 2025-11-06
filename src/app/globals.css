@@ -22,6 +22,9 @@
 
 html, body {
   min-width: 400px; /* or 400px if you prefer */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 body {

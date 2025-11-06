@@ -8,6 +8,21 @@ export type Product = {
   image_url: string;
   original_price: number;
   discount_price: number | null;
+  max_original_price?: number;
+  max_discount_price?: number | null;
+  stock?: number;
+  info?: string;      // optional extra fields
+  order_fulfillment?: string;
+  warranty_period?: string;
+  warranty_method?: string;
+};
+
+export type ProductType = {
+  product_type_id: number;
+  type: string;
+  original_price: string;
+  discount_price: string;
+  stock: number;
 };
 
 export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
@@ -44,4 +59,57 @@ export async function fetchProductData(page: number, limit: number) {
   ]);
 
   return { products, total };
+}
+
+export async function getProductByName(name: string): Promise<Product | null> {
+  const [product] = await sql<Product[]>`
+    SELECT 
+      p.product_id,
+      p.name,
+      p.image_url,
+      MIN(pt.discount_price) AS discount_price,
+      MIN(pt.original_price) AS original_price,
+      MAX(pt.original_price) AS max_original_price,
+      MIN(pt.discount_price) AS max_discount_price,
+      MIN(pt.stock) AS stock,
+      p.info,
+      p.order_fulfillment,
+      p.warranty_period,
+      p.warranty_method
+    FROM product AS p
+    JOIN product_type AS pt ON p.product_id = pt.product_id
+    WHERE p.name ILIKE ${name}
+    GROUP BY p.product_id, p.name, p.image_url, p.info, p.order_fulfillment, p.warranty_period, p.warranty_method
+    LIMIT 1;
+  `;
+
+  return product || null;
+}
+
+export async function getProductTypesById(product_id: number): Promise<ProductType[] | null> {
+  const productTypes = await sql<ProductType[]>`
+    SELECT 
+      product_type_id,
+      type,
+      original_price,
+      discount_price,
+      stock
+    FROM product_type
+    WHERE product_id = ${product_id};
+  `;
+
+  return productTypes;
+}
+
+export async function getProductCategoryById(id: number): Promise<string | null> {
+  // Run the query and get rows
+  const result = await sql<{ category: string }[]>`
+    SELECT c.name AS category
+    FROM product AS p
+    JOIN category AS c ON p.category_id = c.category_id
+    WHERE p.product_id = ${id};
+  `;
+
+  // Return the category name if found, otherwise null
+  return result[0]?.category ?? null;
 }

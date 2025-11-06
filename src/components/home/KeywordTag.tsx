@@ -16,6 +16,7 @@ export type KeywordTagProps = {
   size?: "md" | "lg" | "xl";
   /** Bo góc nhỏ (vuông vức) thay vì pill */
   square?: boolean;
+  mgLeft?: number
 };
 
 export default function KeywordTag({
@@ -24,9 +25,10 @@ export default function KeywordTag({
   onClick,
   size = "lg",
   square = true,
+  mgLeft = 0
 }: KeywordTagProps) {
   const preset = {
-    md: { h: 44, px: 2, font: 16, minW: 100, radius: 2 }, // 8px
+    md: { h: 44, px: 1, py: 2, font: 16, minW: 100, radius: 1 }, // 8px
     lg: { h: 56, px: 2.5, font: 18, minW: 120, radius: 2 }, // 8px
     xl: { h: 64, px: 3, font: 20, minW: 140, radius: 2 }, // 8px
   }[size];
@@ -49,6 +51,7 @@ export default function KeywordTag({
           fontSize: preset.font,
           fontWeight: 700,
         },
+        marginLeft: mgLeft
       }}
     />
   );

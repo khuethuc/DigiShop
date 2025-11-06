@@ -20,6 +20,8 @@ const theme = createTheme({
     button: { textTransform: "none", fontWeight: 600 },
     body1: { fontSize: 18, lineHeight: 1.75 },
     body2: { fontSize: 16, lineHeight: 1.5 },
+    h6: { fontWeight: 700, fontSize: 22 },
+    h1: {fontWeight: 600}
   },
 
   components: {

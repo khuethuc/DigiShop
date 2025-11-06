@@ -102,8 +102,9 @@ export default function Footer() {
                     Payment Methods
                   </Typography>
                   <Stack direction="row" spacing={2} mt={1}>
-                    <Image src="/momo-pay.png" alt="MoMo" width={70} height={25}/>
+                    <Image src="/momo-pay.png" alt="MoMo" width={70} height={10}/>
                     <Image src="/vnpay.jpg" alt="VNPay" width={80} height={25} />
+                    <Image src="/vietqr.png" alt="VietQR" width={80} height={50} />
                   </Stack>
                 </Box>
 
