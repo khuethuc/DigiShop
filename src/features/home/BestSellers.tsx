@@ -1,7 +1,7 @@
 "use client";
 import { Box, Container, Stack, Typography, Button } from "@mui/material";
 import { useMemo } from "react";
-import ProductCard from "../../components/home/ProductCard";
+import ProductCard from "../../components/product/ProductCard";
 
 const items = Array.from({ length: 12 }).map((_, k) => ({
   image: "/images/chatgpt-card.png",

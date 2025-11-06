@@ -13,9 +13,9 @@ export default function CommentCard({
   avatar,
 }: CommentCardProps) {
   return (
-    <Card elevation={1} sx={{ borderRadius: 3 }}>
+    <Card elevation={1} sx={{ borderRadius: 3, height: 150, padding: 2 }}>
       <CardContent>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           “{content}”
         </Typography>
         <Stack direction="row" alignItems="center" spacing={1.5}>

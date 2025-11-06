@@ -19,6 +19,7 @@ const theme = createTheme({
       '"Vazirmatn", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji"',
     button: { textTransform: "none", fontWeight: 600 },
     body1: { fontSize: 18, lineHeight: 1.75 },
+    body2: { fontSize: 16, lineHeight: 1.5 },
   },
 
   components: {

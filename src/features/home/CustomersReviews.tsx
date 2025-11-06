@@ -9,24 +9,24 @@ import CarouselDots from "../../components/CarouselDots";
 const items = [
   {
     content: "Got my account instantly after payment. Smooth and hassle-free!",
-    author: "Meow meow",
-    avatar: "/images/avatar1.jpg",
+    author: "Meowmeow",
+    avatar: "/avatar/meow.jpg",
   },
   {
     content:
       "Everything worked perfectly from the first login. Highly recommended!",
-    author: "Meow meow",
-    avatar: "/images/avatar2.jpg",
+    author: "bkstudent",
+    avatar: "/avatar/dog.jpg",
   },
   {
     content: "Fast delivery and great support. Will buy again.",
-    author: "Meow meow",
-    avatar: "/images/avatar3.jpg",
+    author: "lovegame",
+    avatar: "/avatar/doraemon.png",
   },
   {
     content: "Nice price, reliable service.",
-    author: "Meow meow",
-    avatar: "/images/avatar4.jpg",
+    author: "lily",
+    avatar: "/avatar/lili.jpg",
   },
 ];
 
