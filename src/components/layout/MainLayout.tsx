@@ -1,4 +1,3 @@
-// src/components/layout/MainLayout.tsx
 "use client";
 
 import * as React from "react";

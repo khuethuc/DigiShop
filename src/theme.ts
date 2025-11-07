@@ -1,4 +1,3 @@
-// src/theme.ts
 import { createTheme, alpha } from "@mui/material/styles";
 
 const BRAND_BLUE = "#2C7FFF";

@@ -17,13 +17,14 @@ import {
   ListItemButton,
   ListItemText,
 } from "@mui/material";
-import { Search, ShoppingCart, Menu, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import NextLink from "next/link";
 import Image from "next/image";
 import logo from "public/logo.png";
 import { useEffect, useState } from "react";
 import SearchBar from "src/components/header/SearchBar";
 import CardButton from "src/components/header/CardButton";
+import LogOutBtn from "../header/LogOutBtn";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -121,6 +122,8 @@ export default function Header() {
             <CardButton />
 
             <Button
+              component={NextLink}
+              href="/login"
               variant="contained"
               color="primary"
               sx={{
@@ -137,6 +140,8 @@ export default function Header() {
             </Button>
 
             <Button
+              component={NextLink}
+              href="/signup"
               variant="outlined"
               sx={(theme) => ({
                 borderRadius: 9999,
@@ -151,6 +156,8 @@ export default function Header() {
             >
               Register
             </Button>
+            <LogOutBtn/>
+
           </Stack>
         </Toolbar>
       {/* </Container> */}
