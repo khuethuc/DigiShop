@@ -3,6 +3,7 @@ import Description from "@/components/product/Descrition";
 import { getProductByName, getProductTypesById, getProductCategoryById } from "@/app/lib/product-action";
 import Image from "next/image";
 import MainInfo from "@/components/product/MaiInfo";
+import Comment from "@/components/product/Comment";
 
 type PageProps = {
   params: { name: string }; // Next.js passes this automatically
@@ -19,12 +20,16 @@ export default async function ProductDetail({params} : PageProps) {
 
   return (
     <Stack 
-      sx={{paddingY: {xs: 2, sm: 3, md: 5, lg: 7}, paddingX: { xs: 3, sm: 5, md: 8, lg: 20, xl: 22 } }}
-      spacing={20}
+      sx={{
+        paddingY: {xs: 2, sm: 3, md: 5, lg: 7},
+        paddingX: { xs: 3, sm: 5, md: 8, lg: 20, xl: 22 },
+        width: "100%"
+      }}
+      spacing={8}
       alignItems="center"
     >
       <Box sx={{ maxWidth: 900, width: '100%' }}>
-        <Stack direction={"row"} spacing={5}>
+        <Stack direction={"row"} spacing={5} flexWrap="wrap">
           <Image
             src={product.image_url}
             alt={product.name}
@@ -54,6 +59,8 @@ export default async function ProductDetail({params} : PageProps) {
         wr_period={product.warranty_period || ""}
         wr_method={product.warranty_method || ""}  
       />
+
+      <Comment/>
     </Stack>
   );
 }

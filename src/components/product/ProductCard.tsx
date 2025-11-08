@@ -5,8 +5,8 @@ export type ProductCardProps = {
   image: string;
   title: string;
   subtitle?: string;
-  price: string;
-  oldPrice?: string;
+  price: number;
+  oldPrice?: number;
   discount?: string; // "50%"
 };
 
@@ -59,7 +59,7 @@ export default function ProductCard({
             <Typography fontWeight={700}
                         sx={{ fontSize: { xs: 13, sm: 15, md: 17, lg: 18 } }}
             >
-              {Number(price.replace(/[^\d]/g, "")).toLocaleString("en-US")} ₫
+              {price.toLocaleString("en-US")} ₫
             </Typography>
             {oldPrice && (
               <Typography
@@ -67,7 +67,7 @@ export default function ProductCard({
                 color="text.disabled"
                 sx={{ textDecoration: "line-through", fontSize: { xs: 13, sm: 15, md: 17, lg: 18 } }}
               >
-              {Number(oldPrice.replace(/[^\d]/g, "")).toLocaleString("en-US")} đ
+              {oldPrice.toLocaleString("en-US")} đ
               </Typography>
             )}
             {discount && (

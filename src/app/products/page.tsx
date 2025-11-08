@@ -35,8 +35,8 @@ async function ProductGrid({ page }: { page: number }) {
             <ProductCard
               image={p.image_url}
               title={p.name}
-              price={p.discount_price ? `${p.discount_price} đ` : `${p.original_price} đ`}
-              oldPrice={p.discount_price ? `${p.original_price} đ` : undefined}
+              price={p.discount_price ? p.discount_price : 0}
+              oldPrice={p.discount_price ? p.original_price : undefined}
               discount={
                 p.discount_price
                   ? `${Math.round((1 - p.discount_price / p.original_price) * 100)}%`

@@ -41,3 +41,12 @@ body {
 a, button {
   cursor: pointer !important;
 }
+
+.comment-inp {
+  background-color: white;
+  border: 1px solid rgb(202, 202, 202);
+  border-radius: 10px;
+  width: 100%;
+  padding: 20px;
+  resize: none;
+}
