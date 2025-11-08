@@ -14,9 +14,12 @@ import {
   Alert,
 } from "@mui/material";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import { Mail, Eye, EyeOff, Lock } from "lucide-react";
 
 export default function LoginForm() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,18 +30,20 @@ export default function LoginForm() {
     setError(null);
     setSuccess(null);
     setLoading(true);
+
     const form = new FormData(e.currentTarget);
-    const email = String(form.get("email") || "").trim();
+    const identifier = String(form.get("email") || "").trim(); // email or username
     const password = String(form.get("password") || "");
     const remember = form.get("remember") === "on";
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/authentication", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: identifier, password }),
       });
       const data = await res.json();
+
       if (!res.ok || !data.ok) {
         setError(data.error || "Login failed");
       } else {
@@ -48,12 +53,16 @@ export default function LoginForm() {
           JSON.stringify({
             token: data.token,
             email: data.user.email,
-            role: data.user.role,
+            username: data.user.username,
+            full_name: data.user.full_name,
+            is_admin: !!data.user.is_admin,
           })
         );
-        setSuccess("Đăng nhập mock thành công!");
+        setSuccess("Signed in successfully (seed). Redirecting...");
+        // Redirect to home
+        router.replace("/");
       }
-    } catch (err) {
+    } catch {
       setError("Network error");
     } finally {
       setLoading(false);
@@ -65,12 +74,11 @@ export default function LoginForm() {
       <Stack spacing={3}>
         <Stack spacing={1}>
           <Typography variant="body2" fontWeight={500}>
-            Email*
+            Email or Username*
           </Typography>
           <TextField
             name="email"
-            type="email"
-            placeholder="example@gmail.com"
+            placeholder="user@digishop.com or username"
             required
             fullWidth
             InputProps={{
@@ -104,6 +112,7 @@ export default function LoginForm() {
                   <IconButton
                     onClick={() => setShowPassword((v) => !v)}
                     edge="end"
+                    aria-label="toggle password visibility"
                   >
                     {showPassword ? <EyeOff /> : <Eye />}
                   </IconButton>
@@ -127,7 +136,7 @@ export default function LoginForm() {
               underline="hover"
               sx={{ fontSize: 17 }}
             >
-              Forgot Password?
+              Forgot password?
             </MUILink>
           </Stack>
 

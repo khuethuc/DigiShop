@@ -3,27 +3,65 @@ import { Product, ProductType } from "./definition";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
-export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
-  const offset = (page - 1) * limit;
+let schemaInitialized = false;
+async function ensureSchema() {
+  if (schemaInitialized) return;
+  await sql`SET client_min_messages TO warning;`;
+  // category
+  await sql`
+    CREATE TABLE IF NOT EXISTS category (
+      category_id SERIAL PRIMARY KEY,
+      name VARCHAR(100) UNIQUE NOT NULL
+    );
+  `;
+  // product
+  await sql`
+    CREATE TABLE IF NOT EXISTS product (
+      product_id SERIAL PRIMARY KEY,
+      name VARCHAR(255) UNIQUE NOT NULL,
+      category_id INT REFERENCES category(category_id) ON DELETE SET NULL,
+      image_url VARCHAR(255),
+      info TEXT NOT NULL DEFAULT '',
+      order_fulfillment TEXT NOT NULL DEFAULT '',
+      warranty_period TEXT NOT NULL DEFAULT '',
+      warranty_method TEXT NOT NULL DEFAULT ''
+    );
+  `;
+  // product_type
+  await sql`
+    CREATE TABLE IF NOT EXISTS product_type (
+      product_type_id SERIAL PRIMARY KEY,
+      product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
+      type VARCHAR(100) NOT NULL,
+      original_price INTEGER NOT NULL,
+      discount_price INTEGER,
+      stock INTEGER DEFAULT 0,
+      UNIQUE (product_id, type)
+    );
+  `;
+  schemaInitialized = true;
+}
 
-  const products = await sql<Product[]>`
+export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
+  await ensureSchema();
+  const offset = (page - 1) * limit;
+  return await sql<Product[]>`
     SELECT 
       p.product_id,
       p.name,
       p.image_url,
       MIN(pt.discount_price) AS discount_price,
       MIN(pt.original_price) AS original_price
-    FROM product AS p
-    JOIN product_type AS pt ON p.product_id = pt.product_id
+    FROM product p
+    LEFT JOIN product_type pt ON p.product_id = pt.product_id
     GROUP BY p.product_id, p.name, p.image_url
-    ORDER BY p.name
+    ORDER BY p.product_id
     LIMIT ${limit} OFFSET ${offset};
-    `;
-
-  return products;
+  `;
 }
 
 export async function getProductsCount(): Promise<number> {
+  await ensureSchema();
   const [{ count }] = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count FROM product
   `;
@@ -35,11 +73,11 @@ export async function fetchProductData(page: number, limit: number) {
     getProducts(page, limit),
     getProductsCount(),
   ]);
-
   return { products, total };
 }
 
 export async function getProductByName(name: string): Promise<Product | null> {
+  await ensureSchema();
   const [product] = await sql<Product[]>`
     SELECT 
       p.product_id,
@@ -60,11 +98,11 @@ export async function getProductByName(name: string): Promise<Product | null> {
     GROUP BY p.product_id, p.name, p.image_url, p.info, p.order_fulfillment, p.warranty_period, p.warranty_method
     LIMIT 1;
   `;
-
   return product || null;
 }
 
 export async function getProductTypesById(product_id: number): Promise<ProductType[] | null> {
+  await ensureSchema();
   const productTypes = await sql<ProductType[]>`
     SELECT 
       product_type_id,
@@ -75,19 +113,16 @@ export async function getProductTypesById(product_id: number): Promise<ProductTy
     FROM product_type
     WHERE product_id = ${product_id};
   `;
-
   return productTypes;
 }
 
 export async function getProductCategoryById(id: number): Promise<string | null> {
-  // Run the query and get rows
+  await ensureSchema();
   const result = await sql<{ category: string }[]>`
     SELECT c.name AS category
     FROM product AS p
     JOIN category AS c ON p.category_id = c.category_id
     WHERE p.product_id = ${id};
   `;
-
-  // Return the category name if found, otherwise null
   return result[0]?.category ?? null;
 }

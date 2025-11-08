@@ -10,9 +10,9 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 };
 
 const PRODUCTS_PER_PAGE = 12;
@@ -71,7 +71,8 @@ async function ProductGrid({ page }: { page: number }) {
 }
 
 export default async function ProductPage({ searchParams }: Props) {
-  const page = Number(searchParams.page ?? 1);
+  const sp = await searchParams;
+  const page = Number(sp.page ?? 1);
 
   return (
     <Suspense
