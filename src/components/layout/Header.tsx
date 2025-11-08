@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Avatar,
   AppBar,
   Toolbar,
   Box,
@@ -13,33 +14,64 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Skeleton,
+  Snackbar,
+  Alert
 } from "@mui/material";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown, LogIn, LogOut } from "lucide-react";
 import NextLink from "next/link";
 import Image from "next/image";
 import logo from "public/logo.png";
 import { useEffect, useState } from "react";
 import SearchBar from "src/components/header/SearchBar";
 import CardButton from "src/components/header/CardButton";
-// import LogOutBtn from "../header/LogOutBtn";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [user, setUser] = useState<{
+    username: string;
+    full_name: string;
+    email: string;
+    is_admin: boolean;
+  } | null>(null);
+  const [flashMessage, setFlashMessage] = useState<{ message: string; severity: "success" | "error" } | null>(null);
+
 
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // cập nhật ngay nếu vào giữa trang
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const activeScrolled = mounted && scrolled; // chỉ áp sau mount
+  useEffect(() => {
+    const stored =
+      localStorage.getItem("digishop_auth") ||
+      sessionStorage.getItem("digishop_auth");
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("digishop_auth");
+    sessionStorage.removeItem("digishop_auth");
+    setUser(null);
+    console.log("Logout...")
+    // Show flash message
+    setFlashMessage({ message: "You have logged out successfully.", severity: "success" });
+  };
+
+  var avatarUrl = ""
+  if (user) avatarUrl = `https://avatar.iran.liara.run/public/boy`;
+  const activeScrolled = mounted && scrolled;
 
   return (
-    <AppBar
+    <>
+        <AppBar
       position="sticky"
       color="inherit"
       elevation={activeScrolled ? 3 : 0}
@@ -91,12 +123,7 @@ export default function Header() {
           <MLink underline="none" color="inherit" href="#" sx={linkStyle}>
             Best Sellers
           </MLink>
-          <MLink
-            underline="none"
-            color="inherit"
-            href="/how-to-buy"
-            sx={linkStyle}
-          >
+          <MLink underline="none" color="inherit" href="/how-to-buy" sx={linkStyle}>
             How to Buy
           </MLink>
         </Stack>
@@ -113,42 +140,47 @@ export default function Header() {
 
         <Stack direction="row" spacing={1.5} alignItems="center">
           <CardButton />
-          <Button
-            component={NextLink}
-            href="/login"
-            variant="contained"
-            color="primary"
-            sx={{
-              borderRadius: 9999,
-              px: { xs: 2, md: 3 },
-              height: { xs: 40, md: 46 },
-              fontWeight: 800,
-              textTransform: "none",
-              boxShadow: "0 6px 14px rgba(44,127,255,0.25)",
-              fontSize: { xs: 14, md: 16 },
-            }}
-          >
-            Login
-          </Button>
-          <Button
-            component={NextLink}
-            href="/signup"
-            variant="outlined"
-            sx={(theme) => ({
-              borderRadius: 9999,
-              px: { xs: 2, md: 3 },
-              height: { xs: 40, md: 46 },
-              borderColor: theme.palette.divider,
-              textTransform: "none",
-              color: "text.primary",
-              bgcolor: "background.paper",
-              fontSize: { xs: 14, md: 16 },
-            })}
-          >
-            Register
-          </Button>
-          {/* <LogOutBtn /> */}
+
+          {!mounted ? (
+            // Skeleton placeholder while waiting
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Skeleton variant="circular" width={44} height={44} />
+              <Skeleton variant="text" width={100} height={32} />
+              <Skeleton variant="rectangular" width={80} height={40} sx={{ borderRadius: 9999 }} />
+            </Stack>
+          ) : user ? (
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Avatar src={avatarUrl} alt="avatar" sx={{ width: 44, height: 44 }} />
+              <Button variant="text" sx={{ textTransform: "none", fontWeight: 600, fontSize: 18 }}>
+                {user.username}
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleLogout}
+                sx={{
+                  borderRadius: 9999,
+                  px: { xs: 2, md: 3 },
+                  height: { xs: 40, md: 46 },
+                  textTransform: "none",
+                  gap: 1,
+                }}
+              >
+                <LogOut /> Logout
+              </Button>
+            </Stack>
+          ) : (
+            <>
+              <Button component={NextLink} href="/login" variant="contained" color="primary" sx={{ borderRadius: 9999, px: { xs: 2, md: 3 }, height: { xs: 40, md: 46 }, fontWeight: 800, textTransform: "none", boxShadow: "0 6px 14px rgba(44,127,255,0.25)", fontSize: { xs: 14, md: 16 }, gap: 1 }}>
+                <LogIn /> Login
+              </Button>
+              <Button component={NextLink} href="/signup" variant="outlined" sx={(theme) => ({ borderRadius: 9999, px: { xs: 2, md: 3 }, height: { xs: 40, md: 46 }, borderColor: theme.palette.divider, textTransform: "none", color: "text.primary", bgcolor: "background.paper", fontSize: { xs: 14, md: 16 }})}>
+                Register
+              </Button>
+            </>
+          )}
         </Stack>
+
       </Toolbar>
 
       <Drawer
@@ -174,6 +206,24 @@ export default function Header() {
         </Box>
       </Drawer>
     </AppBar>
+
+<Snackbar
+  open={!!flashMessage}
+  autoHideDuration={3000}
+  onClose={() => setFlashMessage(null)}
+  anchorOrigin={{ vertical: "top", horizontal: "center" }}
+  children={
+    <Alert
+      onClose={() => setFlashMessage(null)}
+      severity={flashMessage?.severity || "info"}
+      sx={{ width: "100%" }}
+    >
+      {flashMessage?.message || ""}
+    </Alert>
+  }
+/>
+
+    </>
   );
 }
 

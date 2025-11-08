@@ -58,9 +58,9 @@ export default function LoginForm() {
             is_admin: !!data.user.is_admin,
           })
         );
-        setSuccess("Signed in successfully (seed). Redirecting...");
-        // Redirect to home
-        router.replace("/");
+        setSuccess("Signed in successfully! Redirecting...");
+        // Redirect to home, force reloading page
+        window.location.href = "/";
       }
     } catch {
       setError("Network error");

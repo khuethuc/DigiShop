@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
     if (!found) {
       return NextResponse.json(
-        { ok: false, error: "Invalid credentials (seed)" },
+        { ok: false, error: "Invalid credentials" },
         { status: 401 }
       );
     }
