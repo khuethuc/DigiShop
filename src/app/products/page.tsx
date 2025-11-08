@@ -5,10 +5,14 @@ import ProductCard from "@/components/product/ProductCard";
 import CardSkeleton from "@/components/product/CardSkeleton";
 import { fetchProductData } from "@/app/lib/product-action";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 };
 
 const PRODUCTS_PER_PAGE = 12;
@@ -39,7 +43,9 @@ async function ProductGrid({ page }: { page: number }) {
               oldPrice={p.discount_price ? p.original_price : undefined}
               discount={
                 p.discount_price
-                  ? `${Math.round((1 - p.discount_price / p.original_price) * 100)}%`
+                  ? `${Math.round(
+                      (1 - p.discount_price / p.original_price) * 100
+                    )}%`
                   : undefined
               }
             />
@@ -61,25 +67,27 @@ async function ProductGrid({ page }: { page: number }) {
 }
 
 export default async function ProductPage({ searchParams }: Props) {
-  const page = Number(searchParams.page ?? 1);
+  const sp = await searchParams;
+  const page = Number(sp.page ?? 1);
 
   return (
-  <Suspense
-    fallback={
-      <Stack
-        spacing={2}
-        mb={4}
-        direction="row"
-        flexWrap="wrap"
-        justifyContent="center"
-        gap={{ xs: 2, md: 3, lg: 4 }}
-      >
-        {Array.from({ length: PRODUCTS_PER_PAGE }).map((_, i) => (
-          <CardSkeleton key={i} />
-        ))}
-      </Stack>
-    }
-  >
-    <ProductGrid page={page} />
-  </Suspense>  );
+    <Suspense
+      fallback={
+        <Stack
+          spacing={2}
+          mb={4}
+          direction="row"
+          flexWrap="wrap"
+          justifyContent="center"
+          gap={{ xs: 2, md: 3, lg: 4 }}
+        >
+          {Array.from({ length: PRODUCTS_PER_PAGE }).map((_, i) => (
+            <CardSkeleton key={i} />
+          ))}
+        </Stack>
+      }
+    >
+      <ProductGrid page={page} />
+    </Suspense>
+  );
 }
