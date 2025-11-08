@@ -13,15 +13,17 @@ type PageProps = {
   params: { name: string };
 };
 
-export default async function ProductDetail({ params }: PageProps) {
-  const name = params.name.replace(/-/g, " ");
+export default async function ProductDetail(props: PageProps) {
+  const { params } = props;
+  const { name } = await params;
+  const formattedName = name.replace(/-/g, " ");
   let product: any,
     product_types: { type: string }[] = [],
     category = "Uncategorized"; // Default fallback
 
   try {
     // Fetch product data first
-    product = await getProductByName(name);
+    product = await getProductByName(formattedName);
 
     // Ensure product exists before fetching related data
     if (product) {
