@@ -1,6 +1,6 @@
-// seed/route.ts
 import bcrypt from 'bcryptjs';
 import postgres from 'postgres';
+import { NextResponse } from 'next/server';
 import { users, categories, products, comments, responses, productTypes } from '../lib/seed_data';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
@@ -19,17 +19,17 @@ async function seedUsers() {
     );
   `;
 
-    const insertedUsers = await Promise.all(
-        users.map(async (u) => {
-            const hashed = await bcrypt.hash(u.password, 10);
-            return sql`
-                INSERT INTO "user" (full_name, username, email, password, birthday, is_admin)
-                VALUES (${u.full_name}, ${u.username}, ${u.email}, ${hashed}, ${u.birthday}, ${u.is_admin ?? false})
-                ON CONFLICT (email) DO NOTHING;
-            `;
-        })
-    );
-    return insertedUsers;
+  const insertedUsers = await Promise.all(
+    users.map(async (u) => {
+      const hashed = await bcrypt.hash(u.password, 10);
+      return sql`
+        INSERT INTO "user" (full_name, username, email, password, birthday, is_admin)
+        VALUES (${u.full_name}, ${u.username}, ${u.email}, ${hashed}, ${u.birthday}, ${u.is_admin ?? false})
+        ON CONFLICT (email) DO NOTHING;
+      `;
+    })
+  );
+  return insertedUsers;
 }
 
 // --- Seed Categories ---
@@ -41,17 +41,17 @@ async function seedCategories() {
     );
   `;
 
-    const insertedCategories = await Promise.all(
-      categories.map((c) => sql`
-          INSERT INTO category (name)
-          VALUES (${c.name})
-          ON CONFLICT (name) DO NOTHING;
-        `)
-    );
-    return insertedCategories;
+  const insertedCategories = await Promise.all(
+    categories.map((c) => sql`
+      INSERT INTO category (name)
+      VALUES (${c.name})
+      ON CONFLICT (name) DO NOTHING;
+    `)
+  );
+  return insertedCategories;
 }
 
-// --- Seed products ---
+// --- Seed Products ---
 async function seedProducts() {
   await sql`
     CREATE TABLE IF NOT EXISTS product (
@@ -66,67 +66,67 @@ async function seedProducts() {
     );
   `;
 
-    const insertedproducts = await Promise.all(
-      products.map(async (p) => {
-        const cat = await sql`SELECT category_id FROM category WHERE name = ${p.category_name} LIMIT 1`;
-        return sql`
-          INSERT INTO product (name, category_id, image_url, info, order_fulfillment, warranty_period, warranty_method)
-          VALUES (${p.name}, ${cat[0]?.category_id}, ${p.image_url || '/products/placeholder.png'}, ${p.info}, ${p.order_fulfillment}, ${p.warranty_period}, ${p.warranty_method})
-          ON CONFLICT (name) DO NOTHING;
-        `;
-      })
-    );
-  
-    return insertedproducts;
+  const insertedProducts = await Promise.all(
+    products.map(async (p) => {
+      const cat = await sql`SELECT category_id FROM category WHERE name = ${p.category_name} LIMIT 1`;
+      return sql`
+        INSERT INTO product (name, category_id, image_url, info, order_fulfillment, warranty_period, warranty_method)
+        VALUES (${p.name}, ${cat[0]?.category_id}, ${p.image_url || '/products/placeholder.png'}, ${p.info}, ${p.order_fulfillment}, ${p.warranty_period}, ${p.warranty_method})
+        ON CONFLICT (name) DO NOTHING;
+      `;
+    })
+  );
+  return insertedProducts;
 }
 
-// -- Seed Comments ---
+// --- Seed Comments ---
 async function seedComments() {
   await sql`
     CREATE TABLE IF NOT EXISTS comment (
-        comment_id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES "user"(id) ON DELETE CASCADE,
-        product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      comment_id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES "user"(id) ON DELETE CASCADE,
+      product_id INT REFERENCES product(product_id) ON DELETE CASCADE,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
 
   const insertedComments = await Promise.all(
     comments.map(async (c) => {
-        return sql`
-          INSERT INTO comment (user_id, product_id, content)
-          VALUES (${c.user_id}, ${c.product_id}, ${c.content})
-          ON CONFLICT DO NOTHING;
-        `;
+      return sql`
+        INSERT INTO comment (user_id, product_id, content)
+        VALUES (${c.user_id}, ${c.product_id}, ${c.content})
+        ON CONFLICT DO NOTHING;
+      `;
     })
   );
   return insertedComments;
 }
 
-// -- Seed Responses ---
+// --- Seed Responses ---
 async function seedResponses() {
-    await sql
-    `CREATE TABLE IF NOT EXISTS response (
-        response_id SERIAL PRIMARY KEY,
-        comment_id INT REFERENCES comment(comment_id) ON DELETE CASCADE,
-        answerer INT REFERENCES "user"(id) ON DELETE CASCADE,
-        content TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  await sql`
+    CREATE TABLE IF NOT EXISTS response (
+      response_id SERIAL PRIMARY KEY,
+      comment_id INT REFERENCES comment(comment_id) ON DELETE CASCADE,
+      answerer INT REFERENCES "user"(id) ON DELETE CASCADE,
+      content TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
 
-    const insertedResponses = await Promise.all(
-        responses.map(async (r) => {
-            return sql`
-          INSERT INTO response (comment_id, answerer, content)
-          VALUES (${r.comment_id}, ${r.answerer}, ${r.content})
-        `;
-        })
-    );
+  const insertedResponses = await Promise.all(
+    responses.map(async (r) => {
+      return sql`
+        INSERT INTO response (comment_id, answerer, content)
+        VALUES (${r.comment_id}, ${r.answerer}, ${r.content})
+      `;
+    })
+  );
+  return insertedResponses;
 }
 
-// --- Seed product Types ---
+// --- Seed Product Types ---
 async function seedProductTypes() {
   await sql`
     CREATE TABLE IF NOT EXISTS product_type (
@@ -140,20 +140,20 @@ async function seedProductTypes() {
     );
   `;
 
-    const insertedproductTypes = await Promise.all(
-        productTypes.map(async (pt) => {
-            const prod = await sql`SELECT product_id FROM product WHERE name = ${pt.product_name} LIMIT 1`;
-            return sql`
-                INSERT INTO product_type (product_id, type, original_price, discount_price, stock)
-              VALUES (${prod[0]?.product_id}, ${pt.type}, ${pt.original_price}, ${pt.discount_price}, ${pt.stock})
-              ON CONFLICT (product_id, type) DO NOTHING;
-            `;
-        })
-    );
-    return insertedproductTypes;
+  const insertedProductTypes = await Promise.all(
+    productTypes.map(async (pt) => {
+      const prod = await sql`SELECT product_id FROM product WHERE name = ${pt.product_name} LIMIT 1`;
+      return sql`
+        INSERT INTO product_type (product_id, type, original_price, discount_price, stock)
+        VALUES (${prod[0]?.product_id}, ${pt.type}, ${pt.original_price}, ${pt.discount_price}, ${pt.stock})
+        ON CONFLICT (product_id, type) DO NOTHING;
+      `;
+    })
+  );
+  return insertedProductTypes;
 }
 
-// --- Seed carts ---
+// --- Seed Carts ---
 async function seedCarts() {
   await sql`
     CREATE TABLE IF NOT EXISTS cart (
@@ -216,9 +216,10 @@ export async function GET() {
     console.log("Seeding orders...");
     await seedOrders();
 
-    return Response.json({ message: 'Digishop database seeded successfully' });
+    return NextResponse.json({ message: 'Digishop database seeded successfully' });
   } catch (error) {
     console.error("❌ Seeding failed:", error);
-    return Response.json({ error }, { status: 500 });
+    const message = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

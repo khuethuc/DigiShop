@@ -1,58 +1,102 @@
-import { Box, Stack} from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import Description from "@/components/product/Descrition";
-import { getProductByName, getProductTypesById, getProductCategoryById } from "@/app/lib/product-action";
+import {
+  getProductByName,
+  getProductTypesById,
+  getProductCategoryById,
+} from "@/app/lib/product-action";
 import Image from "next/image";
 import MainInfo from "@/components/product/MaiInfo";
 
 type PageProps = {
-  params: { name: string }; // Next.js passes this automatically
+  params: { name: string };
 };
 
-export default async function ProductDetail({params} : PageProps) {
-  const resolvedParams = await params; 
-  const name = resolvedParams.name.replace(/-/g, " ");
-  const product = await getProductByName(name);
-  const product_types = await getProductTypesById(product?.product_id || 0);
-  const category = await getProductCategoryById(product?.product_id || 0);
+export default async function ProductDetail({ params }: PageProps) {
+  const name = params.name.replace(/-/g, " ");
+  let product: any,
+    product_types: { type: string }[] = [],
+    category = "Uncategorized"; // Default fallback
 
-  if (!product) return <div>Product not found</div>;
+  try {
+    // Fetch product data first
+    product = await getProductByName(name);
+
+    // Ensure product exists before fetching related data
+    if (product) {
+      // Fetch product types and category concurrently
+      const [fetchedProductTypes, fetchedCategory] = await Promise.all([
+        getProductTypesById(product.product_id),
+        getProductCategoryById(product.product_id),
+      ]);
+
+      product_types = fetchedProductTypes || [];
+      category = fetchedCategory || "Uncategorized";
+    }
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    return (
+      <Typography variant="h6" color="error">
+        Something went wrong while loading product details.
+      </Typography>
+    );
+  }
+
+  // Check if product is found
+  if (!product) {
+    return (
+      <Typography variant="h6" color="error">
+        Product not found
+      </Typography>
+    );
+  }
 
   return (
-    <Stack 
-      sx={{paddingY: {xs: 2, sm: 3, md: 5, lg: 7}, paddingX: { xs: 3, sm: 5, md: 8, lg: 20, xl: 22 } }}
+    <Stack
+      sx={{
+        paddingY: { xs: 2, sm: 3, md: 5, lg: 7 },
+        paddingX: { xs: 3, sm: 5, md: 8, lg: 20, xl: 22 },
+      }}
       spacing={20}
       alignItems="center"
     >
-      <Box sx={{ maxWidth: 900, width: '100%' }}>
+      <Box sx={{ maxWidth: 900, width: "100%" }}>
         <Stack direction={"row"} spacing={5}>
+          {/* Image */}
           <Image
-            src={product.image_url}
+            src={product.image_url || "/default-image.png"} // Fallback image
             alt={product.name}
             width={400}
             height={400}
             style={{ objectFit: "contain", borderRadius: 15 }}
           />
-          
-          <MainInfo 
+
+          {/* Main Info */}
+          <MainInfo
             title={product.name}
-            quanity={Number(product.stock)}
+            quantity={Number(product.stock)}
             discount_price={product.discount_price || null}
             original_price={product.original_price}
             category={category}
-            types={product_types.map((p) => p.type)} 
+            types={product_types.map((p) => p.type)} // Ensure types are always an array
             max_discount_price={product.max_discount_price || null}
-            max_original_price={product.max_original_price}
+            max_original_price={product.max_original_price || null} // Ensuring max_original_price is never undefined
           />
-
         </Stack>
-
       </Box>
-      
+
+      {/* Description */}
       <Description
-        info={product.info || ""}
-        od_ffment={product.order_fulfillment || ""}
-        wr_period={product.warranty_period || ""}
-        wr_method={product.warranty_method || ""}  
+        info={product.info || "No description available."} // Fallback text for missing info
+        order_fulfillment={
+          product.order_fulfillment || "No order fulfillment details."
+        } // Fallback
+        warranty_period={
+          product.warranty_period || "No warranty period provided."
+        } // Fallback
+        warranty_method={
+          product.warranty_method || "No warranty method provided."
+        } // Fallback
       />
     </Stack>
   );

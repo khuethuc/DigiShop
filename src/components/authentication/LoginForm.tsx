@@ -11,78 +11,116 @@ import {
   TextField,
   Typography,
   Link as MUILink,
+  Alert,
 } from "@mui/material";
 import NextLink from "next/link";
-import { Mail, Eye, EyeOff, Lock, TriangleAlert } from "lucide-react";
-import { useActionState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Mail, Eye, EyeOff, Lock } from "lucide-react";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setLoading(true);
+    const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") || "").trim();
+    const password = String(form.get("password") || "");
+    const remember = form.get("remember") === "on";
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.error || "Login failed");
+      } else {
+        const storage = remember ? localStorage : sessionStorage;
+        storage.setItem(
+          "digishop_auth",
+          JSON.stringify({
+            token: data.token,
+            email: data.user.email,
+            role: data.user.role,
+          })
+        );
+        setSuccess("Đăng nhập mock thành công!");
+      }
+    } catch (err) {
+      setError("Network error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-        <form>
-        <Stack spacing={3}>
-          {/* Email */}
-          <Stack spacing={1}>
-            <Typography variant="body2" fontWeight={500}>
-                Email*
-            </Typography>
-            <TextField
-                name="email"
-                type="email"
-                placeholder="example@gmail.com"
-                fullWidth
-                required
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1 } }}
-                slotProps={{
-                input: {
-                    startAdornment: (
-                    <InputAdornment position="start">
-                        <Mail size={20} />
-                    </InputAdornment>
-                    ),
-                },
-                }}
+    <form onSubmit={handleSubmit}>
+      <Stack spacing={3}>
+        <Stack spacing={1}>
+          <Typography variant="body2" fontWeight={500}>
+            Email*
+          </Typography>
+          <TextField
+            name="email"
+            type="email"
+            placeholder="example@gmail.com"
+            required
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Mail size={20} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Stack>
+
+        <Stack spacing={1}>
+          <Typography variant="body2" fontWeight={500}>
+            Password*
+          </Typography>
+          <TextField
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            required
+            fullWidth
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock size={20} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword((v) => !v)}
+                    edge="end"
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <FormControlLabel
+              control={<Checkbox size="small" name="remember" />}
+              label="Remember me"
             />
-            </Stack>
-
-
-          {/* Password */}
-            <Stack spacing={1}>
-            <Typography variant="body2" fontWeight={500}>
-                Password*
-            </Typography>
-            <TextField
-                name="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                fullWidth
-                required
-                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 1 } }}
-                slotProps={{
-                input: {
-                    startAdornment: (
-                    <InputAdornment position="start">
-                        <Lock size={20} />
-                    </InputAdornment>
-                    ),
-                    endAdornment: (
-                    <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                        {showPassword ? <EyeOff /> : <Eye />}
-                        </IconButton>
-                    </InputAdornment>
-                    ),
-                },
-                }}
-            />
-            </Stack>
-
-          {/* Remember + Forgot */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <FormControlLabel control={<Checkbox size="small" />} label="Remember me" />
-
             <MUILink
               component={NextLink}
               href="/forgot-password"
@@ -93,37 +131,21 @@ export default function LoginForm() {
             </MUILink>
           </Stack>
 
-          {/* ERROR
-          <div
-          className="flex h-8 items-end space-x-1"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {errorMessage && (
-            <>
-              <TriangleAlert className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-red-500">{errorMessage}</p>
-            </>
-          )}
-        </div> */}
+          {error && <Alert severity="error">{error}</Alert>}
+          {success && <Alert severity="success">{success}</Alert>}
 
-          {/* Sign-In */}
           <Button
+            type="submit"
             variant="contained"
             fullWidth
             size="large"
-            sx={{
-              borderRadius: 0.5,
-              py: 1.5,
-              fontWeight: 600,
-              boxShadow: "2"
-            }}
+            disabled={loading}
+            sx={{ fontWeight: 600 }}
           >
-            Sign in
+            {loading ? "Signing in..." : "Sign in"}
           </Button>
-
         </Stack>
-        </form>
-    
-    );
+      </Stack>
+    </form>
+  );
 }
