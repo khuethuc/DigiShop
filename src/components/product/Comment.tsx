@@ -24,7 +24,7 @@ export default function Comment(){
               <textarea className="comment-inp" rows={3} placeholder="Write a comment" name="content">
               </textarea>
               <Button
-                onClick=""
+                // onClick=""
                 variant="contained"
                 sx={{
                   paddingX: 3,

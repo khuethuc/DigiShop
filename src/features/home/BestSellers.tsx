@@ -7,8 +7,8 @@ const items = Array.from({ length: 12 }).map((_, k) => ({
   image: "/images/chatgpt-card.png",
   title: `ChatGPT Plus 20$ for 1 Month - #${k + 1}`,
   subtitle: "Instant delivery | Warranty",
-  price: "150.000đ",
-  oldPrice: "300.000đ",
+  price: 150.000,
+  oldPrice: 300.000,
   discount: "50%",
 }));
 
