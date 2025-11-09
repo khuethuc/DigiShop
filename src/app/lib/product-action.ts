@@ -42,16 +42,35 @@ async function ensureSchema() {
   schemaInitialized = true;
 }
 
-export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
+export async function getProducts(
+  page = 1,
+  limit = 12,
+  category?: string
+): Promise<Product[]> {
   await ensureSchema();
   const offset = (page - 1) * limit;
-  return await sql<Product[]>`
-    SELECT 
-      p.product_id,
-      p.name,
-      p.image_url,
-      MIN(pt.discount_price) AS discount_price,
-      MIN(pt.original_price) AS original_price
+  if (category) {
+    return await sql`
+      SELECT p.product_id,
+             p.name,
+             p.image_url,
+             MIN(pt.discount_price) AS discount_price,
+             MIN(pt.original_price) AS original_price
+      FROM product p
+      LEFT JOIN product_type pt ON p.product_id = pt.product_id
+      JOIN category c ON p.category_id = c.category_id
+      WHERE c.name = ${category}
+      GROUP BY p.product_id, p.name, p.image_url
+      ORDER BY p.product_id
+      LIMIT ${limit} OFFSET ${offset};
+    `;
+  }
+  return await sql`
+    SELECT p.product_id,
+           p.name,
+           p.image_url,
+           MIN(pt.discount_price) AS discount_price,
+           MIN(pt.original_price) AS original_price
     FROM product p
     LEFT JOIN product_type pt ON p.product_id = pt.product_id
     GROUP BY p.product_id, p.name, p.image_url
@@ -60,18 +79,31 @@ export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
   `;
 }
 
-export async function getProductsCount(): Promise<number> {
+export async function getProductsCount(category?: string): Promise<number> {
   await ensureSchema();
+  if (category) {
+    const [{ count }] = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count
+      FROM product p
+      JOIN category c ON p.category_id = c.category_id
+      WHERE c.name = ${category};
+    `;
+    return count;
+  }
   const [{ count }] = await sql<{ count: number }[]>`
-    SELECT COUNT(*)::int AS count FROM product
+    SELECT COUNT(*)::int AS count FROM product;
   `;
   return count;
 }
 
-export async function fetchProductData(page: number, limit: number) {
+export async function fetchProductData(
+  page: number,
+  limit: number,
+  category?: string
+) {
   const [products, total] = await Promise.all([
-    getProducts(page, limit),
-    getProductsCount(),
+    getProducts(page, limit, category),
+    getProductsCount(category),
   ]);
   return { products, total };
 }
