@@ -133,19 +133,36 @@ export async function getProductByName(name: string): Promise<Product | null> {
   return product || null;
 }
 
-export async function getProductTypesById(product_id: number): Promise<ProductType[] | null> {
+export type ProductTypeRow = {
+  product_type_id: number;
+  type: string;
+  original_price: number;
+  discount_price: number | null;
+  stock: number | null;
+};
+
+export async function getProductTypesByProductId(
+  productId: number
+): Promise<ProductTypeRow[]> {
   await ensureSchema();
-  const productTypes = await sql<ProductType[]>`
-    SELECT 
+  return await sql<ProductTypeRow[]>`
+    SELECT
       product_type_id,
       type,
-      original_price,
-      discount_price,
+      original_price::float8   AS original_price,
+      discount_price::float8   AS discount_price,
       stock
     FROM product_type
-    WHERE product_id = ${product_id};
+    WHERE product_id = ${productId}
+    ORDER BY product_type_id;
   `;
-  return productTypes;
+}
+
+export async function getFirstProductTypeId(
+  productId: number
+): Promise<number | null> {
+  const rows = await getProductTypesByProductId(productId);
+  return rows[0]?.product_type_id ?? null;
 }
 
 export async function getProductCategoryById(id: number): Promise<string | null> {
