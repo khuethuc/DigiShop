@@ -3,16 +3,21 @@
 import { useState } from "react";
 import { Button, Stack, Typography } from "@mui/material";
 
+type PackageSelectorOption = {
+  id: number;
+  name: string;
+};
+
 type PackageSelectorProps = {
-  options: string[]; // labels from database
-  onSelect?: (selected: string) => void;
+  options: PackageSelectorOption[];
+  onSelect?: (selected: PackageSelectorOption) => void;
 };
 
 export default function PackageSelector({ options, onSelect }: PackageSelectorProps) {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
 
-  const handleSelect = (option: string) => {
-    setSelected(option);
+  const handleSelect = (option: PackageSelectorOption) => {
+    setSelected(option.id);
     onSelect?.(option);
   };
 
@@ -21,12 +26,12 @@ export default function PackageSelector({ options, onSelect }: PackageSelectorPr
       <Typography fontWeight={700} variant="h6">
         Packages
       </Typography>
+
       <Stack direction="row" spacing={2} flexWrap="wrap">
         {options.map((option) => (
           <Button
-            key={option}
-            variant={selected === option ? "contained" : "outlined"}
-            color={selected === option ? "primary" : "inherit"}
+            key={option.id}
+            variant={selected === option.id ? "contained" : "outlined"}
             onClick={() => handleSelect(option)}
             sx={{
               textTransform: "none",
@@ -34,17 +39,10 @@ export default function PackageSelector({ options, onSelect }: PackageSelectorPr
               borderRadius: 0.5,
               px: 3,
               py: 1.5,
-              boxShadow: selected === option ? 2 : 0,
-              backgroundColor: selected === option ? "primary.main" : "transparent",
-              color: selected === option ? "white" : "text.primary",
-              "&:hover": {
-                backgroundColor: selected === option ? "primary.dark" : "action.hover",
-                borderColor: selected === option ? "none" : "black"
-              },
-              borderColor: "black"
+              boxShadow: selected === option.id ? 2 : 0,
             }}
           >
-            {option}
+            {option.name}
           </Button>
         ))}
       </Stack>

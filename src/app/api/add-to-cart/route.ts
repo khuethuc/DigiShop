@@ -3,21 +3,21 @@ import postgres from "postgres";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
-async function ensureSchema() {
-  await sql`
-    CREATE TABLE IF NOT EXISTS cart (
-      cart_id SERIAL PRIMARY KEY,
-      user_id INT NOT NULL,
-      product_type_id INT NOT NULL,
-      quantity INT NOT NULL DEFAULT 1,
-      created_at TIMESTAMPTZ DEFAULT now(),
-      updated_at TIMESTAMPTZ DEFAULT now(),
-      UNIQUE (user_id, product_type_id),
-      FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
-      FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id) ON DELETE CASCADE
-    );
-  `;
-}
+// async function ensureSchema() {
+//   await sql`
+//     CREATE TABLE IF NOT EXISTS cart (
+//       cart_id SERIAL PRIMARY KEY,
+//       user_id INT NOT NULL,
+//       product_type_id INT NOT NULL,
+//       quantity INT NOT NULL DEFAULT 1,
+//       created_at TIMESTAMPTZ DEFAULT now(),
+//       updated_at TIMESTAMPTZ DEFAULT now(),
+//       UNIQUE (user_id, product_type_id),
+//       FOREIGN KEY (user_id) REFERENCES "user"(id) ON DELETE CASCADE,
+//       FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id) ON DELETE CASCADE
+//     );
+//   `;
+// }
 
 async function getUserId(loginId: string) {
   if (!loginId) return null;
@@ -31,7 +31,7 @@ async function getUserId(loginId: string) {
 
 export async function POST(req: Request) {
   try {
-    await ensureSchema();
+    //await ensureSchema();
 
     const body = await req.json();
     const product_type_id = Number(body.product_type_id);
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       INSERT INTO cart (user_id, product_type_id, quantity)
       VALUES (${userId}, ${product_type_id}, 1)
       ON CONFLICT (user_id, product_type_id)
-      DO UPDATE SET quantity = cart.quantity + 1, updated_at = now();
+      DO UPDATE SET quantity = cart.quantity + 1;
     `;
 
     // optional: trả về tổng số item
