@@ -1,8 +1,9 @@
 export type ProductCardProps = {
   image: string;
   title: string;
-  subtitle?: string;
+  type?: string;
   price: number;
   oldPrice?: number;
   discount?: string;
+  quantity?: number;
 };

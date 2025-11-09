@@ -1,5 +1,7 @@
 import { useTheme, useMediaQuery, IconButton } from "@mui/material";
 import { ShoppingCart } from "lucide-react";
+import Link from "next/link";
+
 
 export default function CartButton() {
   const theme = useTheme();
@@ -7,7 +9,10 @@ export default function CartButton() {
   const iconSize = isSmall ? 22 : 32; // 👈 Smaller on mobile
 
   return (
-    <IconButton aria-label="cart" sx={{ color: "text.primary" }}>
+    <IconButton component={Link}
+          href="/cart" aria-label="cart" 
+          sx={{ color: "text.primary" }}
+    >
       <ShoppingCart size={iconSize} />
     </IconButton>
   );

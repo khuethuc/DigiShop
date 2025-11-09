@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import postgres from "postgres";
+import { getUserId } from "@/app/lib/user";
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
@@ -18,16 +19,6 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 //     );
 //   `;
 // }
-
-async function getUserId(loginId: string) {
-  if (!loginId) return null;
-  const [u] = await sql<{ id: number }[]>`
-    SELECT id FROM "user"
-    WHERE lower(email) = ${loginId} OR lower(username) = ${loginId}
-    LIMIT 1;
-  `;
-  return u?.id ?? null;
-}
 
 export async function POST(req: Request) {
   try {

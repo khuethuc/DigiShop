@@ -11,10 +11,10 @@ type Props = {
 };
 
 // ✅ Helper: đọc auth từ sessionStorage
-function getAuth() {
+export function getAuth() {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem("digishop_auth");
+    const raw = sessionStorage.getItem("digishop_auth") || localStorage.getItem("digishop_auth");
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
