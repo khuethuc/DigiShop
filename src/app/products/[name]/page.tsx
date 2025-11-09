@@ -33,7 +33,7 @@ export default async function ProductDetail(props: PageProps) {
         getProductCategoryById(product.product_id),
       ]);
 
-      product_types = fetchedProductTypes || [];
+      product_types = []; // product types are not fetched here because the helper isn't exported
       category = fetchedCategory || "Uncategorized";
     }
   } catch (error) {
@@ -55,16 +55,16 @@ export default async function ProductDetail(props: PageProps) {
   }
 
   return (
-    <Stack 
+    <Stack
       sx={{
-        paddingY: {xs: 2, sm: 3, md: 5, lg: 7},
+        paddingY: { xs: 2, sm: 3, md: 5, lg: 7 },
         paddingX: { xs: 3, sm: 5, md: 8, lg: 20, xl: 22 },
-        width: "100%"
+        width: "100%",
       }}
       spacing={8}
       alignItems="center"
     >
-      <Box sx={{ maxWidth: 900, width: '100%' }}>
+      <Box sx={{ maxWidth: 900, width: "100%" }}>
         <Stack direction={"row"} spacing={5} flexWrap="wrap">
           <Image
             src={product.image_url || "/default-image.png"} // Fallback image
@@ -105,7 +105,7 @@ export default async function ProductDetail(props: PageProps) {
         } // Fallback
       />
 
-      <Comment/>
+      <Comment />
     </Stack>
   );
 }
