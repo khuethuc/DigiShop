@@ -8,15 +8,18 @@ import {
   Button,
   Divider,
   Box,
-  InputAdornment, IconButton 
+  InputAdornment,
 } from "@mui/material";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { getAuth } from "@/components/product/Action"; // same helper as CartPage
 
 interface OrderSectionProps {
   products: {
     price: number;
     quantity: number;
     oldPrice?: number;
+    product_type_id?: number; // ensure it's included from cart
   }[];
 }
 
@@ -29,6 +32,11 @@ export default function OrderSection({ products }: OrderSectionProps) {
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
 
   useEffect(() => {
     const subtotalValue = products.reduce(
@@ -52,6 +60,69 @@ export default function OrderSection({ products }: OrderSectionProps) {
     }
   };
 
+  const handleConfirm = async () => {
+    if (!selectedPayment) {
+      alert("Please select a payment method first!");
+      return;
+    }
+
+    if (selectedPayment !== "vietqr") {
+      alert("This payment method is not yet supported in simulation.");
+      return;
+    }
+
+    const token = localStorage.getItem("digishop_auth") || sessionStorage.getItem("digishop_auth");
+
+    if (!token) {
+      setLoggedIn(false);
+      setLoading(false);
+      alert("You must be logged in to view your cart!");
+      return;
+    }
+
+    setLoggedIn(true);
+
+    const auth = getAuth();
+    if (!auth?.email && !auth?.username) {
+        router.push("/login");
+        return;
+    }
+
+    try {
+      setLoading(true);
+
+      // ✅ Create order in DB
+      const res = await fetch("/api/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: auth.email, // ensure getAuth() includes user_id or adapt
+          payment_method: "vietqr",
+          total_val: total,
+          products: products.map((p) => ({
+            product_type_id: p.product_type_id,
+            quantity: p.quantity,
+          })),
+        }),
+      });
+
+      if (!res.ok) throw new Error("Order creation failed");
+      const data = await res.json();
+
+      // ✅ Redirect to checkout page with QR info
+      router.push(
+        `/checkout?order_id=${data.order_id}&vietqr_url=${encodeURIComponent(
+          data.vietqrUrl
+        )}&note=${encodeURIComponent(data.note)}&amount=${data.total_val}`
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to create order!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Stack
       spacing={2}
@@ -65,7 +136,6 @@ export default function OrderSection({ products }: OrderSectionProps) {
         boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
       }}
     >
-      {/* Title */}
       <Typography variant="h2" sx={{ fontSize: 28, fontWeight: 600 }}>
         Order Details
       </Typography>
@@ -83,45 +153,37 @@ export default function OrderSection({ products }: OrderSectionProps) {
             value={discountCode}
             onChange={(e) => setDiscountCode(e.target.value)}
             sx={{
-                width: "100%",
-                "& .MuiOutlinedInput-root": {
+              width: "100%",
+              "& .MuiOutlinedInput-root": {
                 bgcolor: "white",
                 borderRadius: "8px",
-                "& fieldset": {
-                    borderColor: "transparent",
-                },
-                "&:hover fieldset": {
-                    borderColor: "#004AAD",
-                },
-                "&.Mui-focused fieldset": {
-                    borderColor: "#004AAD",
-                },
-                },
-                "& input": { color: "black" },
+                "& fieldset": { borderColor: "transparent" },
+              },
+              "& input": { color: "black" },
             }}
             InputProps={{
-                endAdornment: (
+              endAdornment: (
                 <InputAdornment position="end">
-                    <Button
-                        variant="outlined"
-                        onClick={handleApplyDiscount}
-                        sx={{
-                            bgcolor: "white",
-                            color: "#4F4F4F",
-                            fontWeight: 600,
-                            borderRadius: 0.5,
-                            paddingX: 2.5, // adjust width
-                            borderColor: "#8A8A8A",
-                            "&:hover": { bgcolor: "#f2f2f2" },
-                            boxShadow: 1
-                        }}
-                        >
-                        Apply
-                    </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleApplyDiscount}
+                    sx={{
+                      bgcolor: "white",
+                      color: "#4F4F4F",
+                      fontWeight: 600,
+                      borderRadius: 0.5,
+                      paddingX: 2.5,
+                      borderColor: "#8A8A8A",
+                      "&:hover": { bgcolor: "#f2f2f2" },
+                      boxShadow: 1,
+                    }}
+                  >
+                    Apply
+                  </Button>
                 </InputAdornment>
-                ),
+              ),
             }}
-            />
+          />
         </Stack>
       </Box>
 
@@ -166,15 +228,10 @@ export default function OrderSection({ products }: OrderSectionProps) {
             borderRadius: 1,
             height: 50,
             "&:hover": { bgcolor: "#8c0054" },
-            gap: 1
+            gap: 1,
           }}
         >
-            <Image
-                src="/momo-pay.png"
-                alt="MoMo Logo"
-                height={30}
-                width={40}
-            />
+          <Image src="/momo-pay.png" alt="MoMo Logo" height={30} width={40} />
           MoMo Payment
         </Button>
 
@@ -188,36 +245,34 @@ export default function OrderSection({ products }: OrderSectionProps) {
             borderRadius: 1,
             height: 50,
             "&:hover": { bgcolor: "#f2f2f2" },
-            gap: 1
+            gap: 1,
           }}
         >
-            <Image
-                src="/Logo-VNPAY-QR.webp"
-                alt="VNPay Logo"
-                width={100}
-                height={50}
-            />
+          <Image
+            src="/Logo-VNPAY-QR.webp"
+            alt="VNPay Logo"
+            width={100}
+            height={50}
+          />
         </Button>
 
         <Button
-          variant="contained"
+          variant={selectedPayment === "vietqr" ? "contained" : "outlined"}
           fullWidth
+          onClick={() => setSelectedPayment("vietqr")}
           sx={{
+            border: selectedPayment === "vietqr" ? "solid 5px #64B7B4" : "0",
+            // borderColor: selectedPayment === "vietqr" ? "#E3FFFE" : "transparent",
             bgcolor: "white",
-            color: "#D41F1F",
-            fontWeight: 700,
             borderRadius: 1,
             height: 50,
-            "&:hover": { bgcolor: "#f2f2f2" },
-            gap: 1
+            "&:hover": {
+              bgcolor: "#f2f2f2",
+            },
+            gap: 1,
           }}
         >
-            <Image
-                src="/vietqr_1.png"
-                alt="VietQR Logo"
-                width={80}
-                height={50}
-            />
+          <Image src="/vietqr_1.png" alt="VietQR Logo" width={80} height={50} />
         </Button>
       </Stack>
 
@@ -230,10 +285,12 @@ export default function OrderSection({ products }: OrderSectionProps) {
           borderRadius: 1,
           "&:hover": { bgcolor: "#f2f2f2" },
           width: 100,
-          alignSelf: "center"
+          alignSelf: "center",
         }}
+        disabled={loading}
+        onClick={handleConfirm}
       >
-        Confirm
+        {loading ? "..." : "Confirm"}
       </Button>
     </Stack>
   );

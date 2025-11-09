@@ -69,6 +69,7 @@ export default function Header() {
     sessionStorage.removeItem("digishop_auth");
     setUser(null);
     console.log("Logout...");
+    window.location.href='/';
     // Show flash message
     setFlashMessage({
       message: "You have logged out successfully.",

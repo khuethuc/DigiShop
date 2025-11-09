@@ -65,7 +65,6 @@ async function ProductGrid({
                     )}%`
                   : undefined
               }
-              subtitle={category || undefined}
             />
           </Link>
         ))}

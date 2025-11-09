@@ -5,7 +5,6 @@ import type { ProductCardProps } from "@/type/product-type";
 export default function ProductCard({
   image,
   title,
-  subtitle,
   price,
   oldPrice,
   discount,
@@ -51,7 +50,7 @@ export default function ProductCard({
         <Typography
           fontWeight={600}
           sx={{
-            fontSize: { xs: 13.5, sm: 14, md: 14.5 },
+            fontSize: { xs: 13.5, sm: 15, md: 17.5 },
             lineHeight: 1.3,
             minHeight: { xs: 34, sm: 34 },
             overflow: "hidden",

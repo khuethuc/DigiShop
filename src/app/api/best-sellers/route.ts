@@ -23,7 +23,7 @@ export async function GET() {
     const item: ProductCardProps = {
       image: p.image_url ?? "/products/placeholder.png",
       title: p.name,
-      subtitle: p.warranty_period || "Top pick",
+      //subtitle: p.warranty_period || "Top pick",
       price: Number(minDiscount ?? 0),
       ...(minOriginal !== undefined ? { oldPrice: Number(minOriginal) } : {}),
       ...(pct !== undefined ? { discount: `${pct}%` } : {}),
