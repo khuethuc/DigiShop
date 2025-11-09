@@ -44,9 +44,14 @@ async function ensureSchema() {
   schemaInitialized = true;
 }
 
-export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
+export async function getProducts(
+  page = 1,
+  limit = 12,
+  category?: string
+): Promise<Product[]> {
   await ensureSchema();
   const offset = (page - 1) * limit;
+<<<<<<< HEAD
     if (!HAS_DB || !sql) {
       // fallback to seed data
       return seedProducts.slice(offset, offset + limit).map((p, i) => ({
@@ -71,14 +76,44 @@ export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
         MIN(pt.original_price) AS original_price
       FROM product p
       LEFT JOIN product_type pt ON p.product_id = pt.product_id
+=======
+  if (category) {
+    return await sql`
+      SELECT p.product_id,
+             p.name,
+             p.image_url,
+             MIN(pt.discount_price) AS discount_price,
+             MIN(pt.original_price) AS original_price
+      FROM product p
+      LEFT JOIN product_type pt ON p.product_id = pt.product_id
+      JOIN category c ON p.category_id = c.category_id
+      WHERE c.name = ${category}
+>>>>>>> origin/main
       GROUP BY p.product_id, p.name, p.image_url
       ORDER BY p.product_id
       LIMIT ${limit} OFFSET ${offset};
     `;
+<<<<<<< HEAD
+=======
+  }
+  return await sql`
+    SELECT p.product_id,
+           p.name,
+           p.image_url,
+           MIN(pt.discount_price) AS discount_price,
+           MIN(pt.original_price) AS original_price
+    FROM product p
+    LEFT JOIN product_type pt ON p.product_id = pt.product_id
+    GROUP BY p.product_id, p.name, p.image_url
+    ORDER BY p.product_id
+    LIMIT ${limit} OFFSET ${offset};
+  `;
+>>>>>>> origin/main
 }
 
-export async function getProductsCount(): Promise<number> {
+export async function getProductsCount(category?: string): Promise<number> {
   await ensureSchema();
+<<<<<<< HEAD
    if (!HAS_DB || !sql) {
      return seedProducts.length;
    }
@@ -86,12 +121,31 @@ export async function getProductsCount(): Promise<number> {
      SELECT COUNT(*)::int AS count FROM product
    `;
    return count;
+=======
+  if (category) {
+    const [{ count }] = await sql<{ count: number }[]>`
+      SELECT COUNT(*)::int AS count
+      FROM product p
+      JOIN category c ON p.category_id = c.category_id
+      WHERE c.name = ${category};
+    `;
+    return count;
+  }
+  const [{ count }] = await sql<{ count: number }[]>`
+    SELECT COUNT(*)::int AS count FROM product;
+  `;
+  return count;
+>>>>>>> origin/main
 }
 
-export async function fetchProductData(page: number, limit: number) {
+export async function fetchProductData(
+  page: number,
+  limit: number,
+  category?: string
+) {
   const [products, total] = await Promise.all([
-    getProducts(page, limit),
-    getProductsCount(),
+    getProducts(page, limit, category),
+    getProductsCount(category),
   ]);
   return { products, total };
 }
@@ -137,22 +191,44 @@ export async function getProductByName(name: string): Promise<Product | null> {
   return product || null;
 }
 
-export async function getProductTypesById(product_id: number): Promise<ProductType[] | null> {
+export type ProductTypeRow = {
+  product_type_id: number;
+  type: string;
+  original_price: number;
+  discount_price: number | null;
+  stock: number | null;
+};
+
+export async function getProductTypesByProductId(
+  productId: number
+): Promise<ProductTypeRow[]> {
   await ensureSchema();
+<<<<<<< HEAD
   if (!HAS_DB || !sql) {
     return [];
   }
   const productTypes = await sql<ProductType[]>`
     SELECT 
+=======
+  return await sql<ProductTypeRow[]>`
+    SELECT
+>>>>>>> origin/main
       product_type_id,
       type,
-      original_price,
-      discount_price,
+      original_price::float8   AS original_price,
+      discount_price::float8   AS discount_price,
       stock
     FROM product_type
-    WHERE product_id = ${product_id};
+    WHERE product_id = ${productId}
+    ORDER BY product_type_id;
   `;
-  return productTypes;
+}
+
+export async function getFirstProductTypeId(
+  productId: number
+): Promise<number | null> {
+  const rows = await getProductTypesByProductId(productId);
+  return rows[0]?.product_type_id ?? null;
 }
 
 export async function getProductCategoryById(id: number): Promise<string | null> {

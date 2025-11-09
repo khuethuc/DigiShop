@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import Description from "@/components/product/Descrition";
 import {
   getProductByName,
-  getProductTypesById,
+  getProductTypesByProductId,
   getProductCategoryById,
 } from "@/app/lib/product-action";
 import Image from "next/image";
@@ -18,7 +18,7 @@ export default async function ProductDetail(props: PageProps) {
   const { name } = await params;
   const formattedName = name.replace(/-/g, " ");
   let product: any,
-    product_types: { type: string }[] = [],
+    product_types: { product_type_id: number, type: string }[] = [],
     category = "Uncategorized"; // Default fallback
 
   try {
@@ -29,7 +29,7 @@ export default async function ProductDetail(props: PageProps) {
     if (product) {
       // Fetch product types and category concurrently
       const [fetchedProductTypes, fetchedCategory] = await Promise.all([
-        getProductTypesById(product.product_id),
+        getProductTypesByProductId(product.product_id),
         getProductCategoryById(product.product_id),
       ]);
 
@@ -81,7 +81,10 @@ export default async function ProductDetail(props: PageProps) {
             discount_price={product.discount_price || null}
             original_price={product.original_price}
             category={category}
-            types={product_types.map((p) => p.type)} // Ensure types are always an array
+            types={product_types.map((p) => ({
+                  id: p.product_type_id,
+                  name: p.type,
+            }))}
             max_discount_price={product.max_discount_price || null}
             max_original_price={product.max_original_price || null} // Ensuring max_original_price is never undefined
           />

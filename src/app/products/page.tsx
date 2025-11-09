@@ -12,23 +12,40 @@ export const fetchCache = "force-no-store";
 type Props = {
   searchParams: Promise<{
     page?: string;
+    category?: string;
   }>;
 };
 
 const PRODUCTS_PER_PAGE = 12;
 
-async function ProductGrid({ page }: { page: number }) {
-  const { products, total } = await fetchProductData(page, PRODUCTS_PER_PAGE);
+async function ProductGrid({
+  page,
+  category,
+}: {
+  page: number;
+  category?: string;
+}) {
+  const { products, total } = await fetchProductData(
+    page,
+    PRODUCTS_PER_PAGE,
+    category
+  );
   const totalPages = Math.ceil(total / PRODUCTS_PER_PAGE);
 
   return (
     <>
-      <Stack
-        margin={{ xs: 1, md: 3 }}
-        direction="row"
-        flexWrap="wrap"
-        justifyContent="center"
-        gap={{ xs: 2, md: 3, lg: 4 }}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3, md: 8, lg: 14 },
+          py: { xs: 2, md: 3 },
+          mx: "auto",
+          maxWidth: 1900,
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 320px))", // wider cards
+          justifyContent: "center",
+          columnGap: { xs: 3.5, md: 5, lg: 6 },               // keep nice spacing
+          rowGap: { xs: 2.25, md: 2.75 },
+        }}
       >
         {products.map((p) => (
           <Link
@@ -51,8 +68,7 @@ async function ProductGrid({ page }: { page: number }) {
             />
           </Link>
         ))}
-      </Stack>
-
+      </Box>
       <Stack spacing={2} direction="row" justifyContent="center" my={4}>
         <Pagination
           count={totalPages}
@@ -69,6 +85,7 @@ async function ProductGrid({ page }: { page: number }) {
 export default async function ProductPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Number(sp.page ?? 1);
+  const category = sp.category ? decodeURIComponent(sp.category) : undefined;
 
   return (
     <Suspense
@@ -87,7 +104,7 @@ export default async function ProductPage({ searchParams }: Props) {
         </Stack>
       }
     >
-      <ProductGrid page={page} />
+      <ProductGrid page={page} category={category} />
     </Suspense>
   );
 }

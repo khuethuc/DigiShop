@@ -1,20 +1,32 @@
 "use client";
-import { Box, Container, Stack, Typography, Button } from "@mui/material";
-import { useMemo } from "react";
+import {
+  Box,
+  Container,
+  Stack,
+  Typography,
+  Button,
+  Skeleton,
+} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import ProductCard from "../../components/product/ProductCard";
-
-const items = Array.from({ length: 12 }).map((_, k) => ({
-  image: "/images/chatgpt-card.png",
-  title: `ChatGPT Plus 20$ for 1 Month - #${k + 1}`,
-  subtitle: "Instant delivery | Warranty",
-  price: 150.000,
-  oldPrice: 300.000,
-  discount: "50%",
-}));
+import type { ProductCardProps } from "@/type/product-type";
 
 export default function BestSellers() {
-  // Lấy đúng 6 item để hiển thị
-  const sixItems = useMemo(() => items.slice(0, 6), []);
+  const [items, setItems] = useState<ProductCardProps[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/best-sellers", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => alive && setItems(Array.isArray(d.items) ? d.items : []))
+      .catch(() => alive && setError("Failed to load"));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const sixItems = useMemo(() => (items ?? []).slice(0, 6), [items]);
 
   return (
     <Container sx={{ py: 4 }}>
@@ -32,7 +44,6 @@ export default function BestSellers() {
             A selection of trending items you might love.
           </Typography>
         </Stack>
-
         <Button
           size="small"
           variant="contained"
@@ -43,20 +54,22 @@ export default function BestSellers() {
         </Button>
       </Stack>
 
-      {/* Grid 6 cards: 2 cột (xs), 3 cột (sm+) */}
       <Box
         sx={{
           display: "grid",
           gap: 2,
-          gridTemplateColumns: {
-            xs: "repeat(2, minmax(0, 1fr))",
-            sm: "repeat(3, minmax(0, 1fr))",
-          },
+          gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)" },
         }}
       >
-        {sixItems.map((it, i) => (
-          <ProductCard key={i} {...it} />
-        ))}
+        {items === null ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} variant="rectangular" height={240} />
+          ))
+        ) : error ? (
+          <Typography color="error">Failed to load</Typography>
+        ) : (
+          sixItems.map((it, i) => <ProductCard key={i} {...it} />)
+        )}
       </Box>
     </Container>
   );
