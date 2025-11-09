@@ -7,6 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme";
 import Header from "./Header";
 import Footer from "./Footer";
+import ChatWidget from "@/components/chat/ChatWidget";
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {children}
         </Box>
         <Footer />
+        <ChatWidget />
       </ThemeProvider>
     </StyledEngineProvider>
   );

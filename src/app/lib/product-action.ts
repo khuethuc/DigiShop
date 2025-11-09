@@ -1,13 +1,15 @@
 import postgres from "postgres";
 import { Product, ProductType } from "./definition";
+import { products as seedProducts } from "./seed_data";
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
+const HAS_DB = !!process.env.POSTGRES_URL;
+const sql = HAS_DB ? postgres(process.env.POSTGRES_URL!, { ssl: "require" }) : null;
 
 let schemaInitialized = false;
 async function ensureSchema() {
   if (schemaInitialized) return;
+  if (!HAS_DB || !sql) return; 
   await sql`SET client_min_messages TO warning;`;
-  // category
   await sql`
     CREATE TABLE IF NOT EXISTS category (
       category_id SERIAL PRIMARY KEY,
@@ -45,27 +47,45 @@ async function ensureSchema() {
 export async function getProducts(page = 1, limit = 12): Promise<Product[]> {
   await ensureSchema();
   const offset = (page - 1) * limit;
-  return await sql<Product[]>`
-    SELECT 
-      p.product_id,
-      p.name,
-      p.image_url,
-      MIN(pt.discount_price) AS discount_price,
-      MIN(pt.original_price) AS original_price
-    FROM product p
-    LEFT JOIN product_type pt ON p.product_id = pt.product_id
-    GROUP BY p.product_id, p.name, p.image_url
-    ORDER BY p.product_id
-    LIMIT ${limit} OFFSET ${offset};
-  `;
+    if (!HAS_DB || !sql) {
+      // fallback to seed data
+      return seedProducts.slice(offset, offset + limit).map((p, i) => ({
+        product_id: offset + i + 1,
+        name: p.name,
+        image_url: p.image_url || "",
+        original_price: 0,
+        discount_price: null,
+        info: p.info || "",
+        order_fulfillment: p.order_fulfillment || "",
+        warranty_period: p.warranty_period || "",
+        warranty_method: p.warranty_method || "",
+      }));
+    }
+
+    return await sql<Product[]>`
+      SELECT 
+        p.product_id,
+        p.name,
+        p.image_url,
+        MIN(pt.discount_price) AS discount_price,
+        MIN(pt.original_price) AS original_price
+      FROM product p
+      LEFT JOIN product_type pt ON p.product_id = pt.product_id
+      GROUP BY p.product_id, p.name, p.image_url
+      ORDER BY p.product_id
+      LIMIT ${limit} OFFSET ${offset};
+    `;
 }
 
 export async function getProductsCount(): Promise<number> {
   await ensureSchema();
-  const [{ count }] = await sql<{ count: number }[]>`
-    SELECT COUNT(*)::int AS count FROM product
-  `;
-  return count;
+   if (!HAS_DB || !sql) {
+     return seedProducts.length;
+   }
+   const [{ count }] = await sql<{ count: number }[]>`
+     SELECT COUNT(*)::int AS count FROM product
+   `;
+   return count;
 }
 
 export async function fetchProductData(page: number, limit: number) {
@@ -78,6 +98,22 @@ export async function fetchProductData(page: number, limit: number) {
 
 export async function getProductByName(name: string): Promise<Product | null> {
   await ensureSchema();
+  if (!HAS_DB || !sql) {
+    const found = seedProducts.find((p) => p.name.toLowerCase() === name.toLowerCase());
+    if (!found) return null;
+    return {
+      product_id: 1,
+      name: found.name,
+      image_url: found.image_url || "",
+      original_price: 0,
+      discount_price: null,
+      info: found.info || "",
+      order_fulfillment: found.order_fulfillment || "",
+      warranty_period: found.warranty_period || "",
+      warranty_method: found.warranty_method || "",
+    };
+  }
+
   const [product] = await sql<Product[]>`
     SELECT 
       p.product_id,
@@ -103,6 +139,9 @@ export async function getProductByName(name: string): Promise<Product | null> {
 
 export async function getProductTypesById(product_id: number): Promise<ProductType[] | null> {
   await ensureSchema();
+  if (!HAS_DB || !sql) {
+    return [];
+  }
   const productTypes = await sql<ProductType[]>`
     SELECT 
       product_type_id,
@@ -118,6 +157,10 @@ export async function getProductTypesById(product_id: number): Promise<ProductTy
 
 export async function getProductCategoryById(id: number): Promise<string | null> {
   await ensureSchema();
+  if (!HAS_DB || !sql) {
+    const p = seedProducts[id - 1];
+    return p?.category_name ?? null;
+  }
   const result = await sql<{ category: string }[]>`
     SELECT c.name AS category
     FROM product AS p
