@@ -68,28 +68,32 @@ const docs = seedProducts.map((p, i) => {
   };
 });
 
-async function callGenerativeModel(prompt: string) {
-  const url = process.env.GENERATIVE_API_URL;
-  const key = process.env.GENERATIVE_API_KEY;
-  if (!url || !key) {
-    return null;
-  }
+// SỬA: Thay đổi (prompt: string) thành (payload: object)
+async function callGenerativeModel(payload: object) { 
+  const url = process.env.GENERATIVE_API_URL;
+   const key = process.env.GENERATIVE_API_KEY;
+  if (!url || !key) {
+    console.log("Url or key is null");
+    return null;
+  }
+  console.log("Connect OK");
 
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({ prompt, max_tokens: 512 }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.text ?? data.output ?? data.response ?? data;
-  } catch {
-    return null;
-  }
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      // SỬA: Gửi trực tiếp đối tượng payload đã được chuỗi hóa
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.text ?? data.output ?? data.response ?? data;
+  } catch {
+    return null;
+  }
 }
 
 function classifyIntent(q: string) {
@@ -207,20 +211,22 @@ export async function POST(req: Request) {
 
     const prompt = buildPrompt(intent, retrievedText, q);
 
-    const gen = await callGenerativeModel(
-      JSON.stringify({
-        prompt,
-        max_tokens: 220,       // giảm để ngắn gọn
-        temperature: 0.2,
-        stop: ["\n\n\n"],      // dừng sớm
-      })
-    );
+    // SỬA: Tạo một đối tượng payload riêng
+    const modelPayload = {
+      prompt,
+      max_tokens: 220,
+      temperature: 0.2,
+      stop: ["\n\n\n"],
+    };
 
-    if (gen) {
-      const raw = typeof gen === "string" ? gen : JSON.stringify(gen);
-      const answer = postProcessShort(raw, intent);
-      return NextResponse.json({ ok: true, answer, sources: scored.map((s) => s.d.title), intent });
-    }
+    // SỬA: Truyền trực tiếp đối tượng 'modelPayload'
+    const gen = await callGenerativeModel(modelPayload);
+
+    if (gen) {
+      const raw = typeof gen === "string" ? gen : JSON.stringify(gen);
+      const answer = postProcessShort(raw, intent);
+      return NextResponse.json({ ok: true, answer, sources: scored.map((s) => s.d.title), intent });
+    }
 
     // Fallback: tự tóm tắt cực ngắn cho warranty
     if (intent === "warranty" && scored[0]) {

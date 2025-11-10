@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Box, Fab, Paper, IconButton, Stack, TextField, Typography, List, ListItem, Avatar, CircularProgress } from "@mui/material";
 import { MessageCircle, X } from "lucide-react";
 
@@ -13,9 +13,23 @@ export default function ChatWidget() {
   const [loading, setLoading] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
 
+  // Add a greeting when the chat is first opened
+  useEffect(() => {
+    if (open && msgs.length === 0) {
+      const greeting: Msg = {
+        id: String(Date.now()),
+        role: "assistant",
+        text: "Hi! Welcome to DigiShop 👋 How can I help you today?",
+      };
+      setMsgs([greeting]);
+      setTimeout(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }), 100);
+    }
+  }, [open, msgs.length]);
+
   const send = async () => {
     const trimmed = input.trim();
     if (!trimmed) return;
+
     const userMsg: Msg = { id: String(Date.now()), role: "user", text: trimmed };
     setMsgs((m) => [...m, userMsg]);
     setInput("");
@@ -48,8 +62,28 @@ export default function ChatWidget() {
       </Box>
 
       {open && (
-        <Paper elevation={12} sx={{ position: "fixed", right: 24, bottom: 88, width: 360, height: 480, zIndex: 1500, display: "flex", flexDirection: "column" }}>
-          <Box sx={{ p: 1, borderBottom: (theme) => `1px solid ${theme.palette.divider}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <Paper
+          elevation={12}
+          sx={{
+            position: "fixed",
+            right: 24,
+            bottom: 88,
+            width: 400,
+            height: 480,
+            zIndex: 1500,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            sx={{
+              p: 1,
+              borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Typography variant="subtitle1">DigiShop Help</Typography>
             <IconButton size="small" onClick={() => setOpen(false)}>
               <X size={16} />
@@ -60,9 +94,23 @@ export default function ChatWidget() {
             <List>
               {msgs.map((m) => (
                 <ListItem key={m.id} sx={{ display: "flex", alignItems: "flex-start" }}>
-                  <Avatar sx={{ mr: 1 }}>{m.role === "user" ? "U" : "B"}</Avatar>
-                  <Box sx={{ bgcolor: m.role === "user" ? "#e3f2fd" : "#f5f5f5", p: 1.5, borderRadius: 1, maxWidth: "100%" }}>
-                    <Typography variant="body2">{m.text}</Typography>
+                  <Avatar sx={{ mr: 1 }}>{m.role === "user" ? "U" : "DS"}</Avatar>
+                  <Box
+                    sx={{
+                      bgcolor: m.role === "user" ? "#e3f2fd" : "#f5f5f5",
+                      p: 1.5,
+                      borderRadius: 1,
+                      maxWidth: "100%",
+                    }}
+                  >
+                    <Typography variant="body2">
+                      {m.text.split("\n").map((line, i) => (
+                      <span key={i}>
+                        {line}
+                        <br />
+                      </span>
+                    ))}
+                    </Typography>
                   </Box>
                 </ListItem>
               ))}
@@ -77,7 +125,25 @@ export default function ChatWidget() {
 
           <Box sx={{ p: 1, borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
             <Stack direction="row" spacing={1}>
-              <TextField value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about orders, products, warranty..." size="small" fullWidth onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); send(); } }} />
+              <TextField
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask about orders, products, warranty..."
+                size="small"
+                sx={{
+                  "& .MuiInputBase-input": {
+                    fontSize: 14,
+                    paddingY: 1.2,
+                  },
+                }}
+                fullWidth
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+              />
               <IconButton color="primary" onClick={send} disabled={loading}>
                 <MessageCircle size={18} />
               </IconButton>

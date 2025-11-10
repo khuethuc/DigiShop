@@ -13,6 +13,12 @@ type PageProps = {
   params: { name: string };
 };
 
+export const metadata = {
+  title: "Product Diletal",
+  description:
+    "Product Detail of a selected product",
+};
+
 export default async function ProductDetail(props: PageProps) {
   const { params } = props;
   const { name } = await params;

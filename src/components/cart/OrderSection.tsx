@@ -96,7 +96,7 @@ export default function OrderSection({ products }: OrderSectionProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: auth.email, // ensure getAuth() includes user_id or adapt
+          email: auth.email,
           payment_method: "vietqr",
           total_val: total,
           products: products.map((p) => ({
