@@ -174,6 +174,8 @@ async function seedOrders() {
       state VARCHAR(30) CHECK (state IN ('pending', 'cancelled', 'completed')) DEFAULT 'pending',
       payment_method VARCHAR(7) CHECK (payment_method IN ('momo', 'vnpay', 'vietqr')) NOT NULL,
       total_val INTEGER,
+      qr_url TEXT,
+      note TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       final_state_time TIMESTAMP
     );

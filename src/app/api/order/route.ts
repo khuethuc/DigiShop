@@ -19,14 +19,30 @@ export async function POST(req: Request) {
   const orderOwner = await sql`
     INSERT INTO ORDER_OWNER (user_id, payment_method, total_val)
     VALUES (${userId}, ${payment_method}, ${total_val})
-    RETURNING order_id, created_at;
+    RETURNING order_id;
   `;
-  console.log("After creating order_owner")
+  console.log("After creating order_owner");
 
   // result is an array of rows
-  const { order_id, created_at } = orderOwner[0];
+  const { order_id } = orderOwner[0];
 
-  // 2. Insert products into ORDER
+  // Return VietQR data
+  const bankCode = "VCB";
+  const accountNumber = "0123456789";
+  const accountName = "DigiShop";
+  const note = `DigiShop - Payment for Order ${order_id}`;
+  const vietqrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${total_val}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(accountName)}`;
+
+  // Save qr url, note in database
+  await sql`
+    UPDATE order_owner
+    SET qr_url = ${vietqrUrl},
+        note = ${note}
+    WHERE order_id = ${order_id};
+  `;
+  console.log("Save qr, note");
+
+  // Insert products into ORDER
   for (const item of products) {
     await sql`
       INSERT INTO "order" (order_id, product_type_id, quantity)
@@ -34,19 +50,5 @@ export async function POST(req: Request) {
     `;
   }
 
-  // 3. Return VietQR data
-  const bankCode = "VCB";
-  const accountNumber = "0123456789";
-  const accountName = "DigiShop";
-  const note = `DigiShop - Payment for Order ${order_id}`;
-
-  const vietqrUrl = `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${total_val}&addInfo=${encodeURIComponent(note)}&accountName=${encodeURIComponent(accountName)}`;
-
-  return NextResponse.json({
-    order_id,
-    vietqrUrl,
-    note,
-    total_val,
-    created_at,
-  });
+  return NextResponse.json({order_id});
 }

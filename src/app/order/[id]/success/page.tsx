@@ -4,10 +4,20 @@ import { Stack, Typography, Button } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState, Suspense } from "react";
+
 
 export default function SuccessfulPage() {
   const params = useSearchParams();
-  const id = params.get("id");
+  const id = params.get("order_id");
+
+  // update order
+  async function fetchOrder() {
+    const res = await fetch(`/api/order/${id}/success`);
+    if res ={
+      
+    }
+  }
 
   return (
     <Stack alignItems="center" spacing={2} sx={{ py: 5 }}>
