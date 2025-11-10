@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { ClockFading } from "lucide-react";
 
-function OrderDetails({ order, orderId, timeLeft, minutes, seconds, onSimulatePayment }: any) {
+function OrderDetails({ order, order_id, timeLeft, minutes, seconds, onSimulatePayment }: any) {
   //format timestamp
   const createdDate = new Date(order.created_at);
   
@@ -65,7 +65,7 @@ function OrderDetails({ order, orderId, timeLeft, minutes, seconds, onSimulatePa
           NOTE: PLEASE COMPLETE PAYMENT WITHIN 30 MINUTES!
         </Typography>
 
-        <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Order ID: {orderId}</Typography>
+        <Typography sx={{ fontWeight: 600, fontSize: 20 }}>Order ID: {order_id}</Typography>
         <Typography fontStyle="italic" color="gray">
           Created Time: {createdDate.toLocaleDateString()}{" "}{createdDate.toLocaleTimeString()}
         </Typography>
@@ -73,7 +73,7 @@ function OrderDetails({ order, orderId, timeLeft, minutes, seconds, onSimulatePa
         <Typography>Step 1: Log in to your banking app.</Typography>
         <Typography>Step 2: Scan the QR code.</Typography>
         <Typography>
-          Step 3: Confirm payment for <b>Order #{orderId}</b> and wait for DigiShop to process.
+          Step 3: Confirm payment for <b>Order #{order_id}</b> and wait for DigiShop to process.
         </Typography>
       </Stack>
     </Stack>
@@ -83,7 +83,7 @@ function OrderDetails({ order, orderId, timeLeft, minutes, seconds, onSimulatePa
 export default function CheckOutPage() {
   const params = useSearchParams();
   const router = useRouter();
-  const orderId = params.get("order_id");
+  const order_id = params.get("order_id");
 
   const [order, setOrder] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(1800); // 30 min
@@ -104,18 +104,18 @@ export default function CheckOutPage() {
   const seconds = (timeLeft % 60).toString().padStart(2, "0");
 
   const handleSimulatePayment = () => {
-    router.push(`/success?order_id=${orderId}`);
+    router.push(`/order/${order_id}/success`);
   };
 
   // Fetch order data
   useEffect(() => {
     async function fetchOrder() {
-      const res = await fetch(`/api/order/${orderId}`);
+      const res = await fetch(`/api/order/${order_id}`);
       const data = await res.json();
       setOrder(data);
     }
-    if (orderId) fetchOrder();
-  }, [orderId]);
+    if (order_id) fetchOrder();
+  }, [order_id]);
 
   // Suspense-like fallback using skeletons
   if (!order) {
@@ -142,7 +142,7 @@ export default function CheckOutPage() {
     <Suspense fallback={<p>Loading order...</p>}>
       <OrderDetails
         order={order}
-        orderId={orderId}
+        order_id={order_id}
         timeLeft={timeLeft}
         minutes={minutes}
         seconds={seconds}
