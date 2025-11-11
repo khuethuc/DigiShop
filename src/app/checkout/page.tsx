@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { ClockFading } from "lucide-react";
+import { getAuth } from "@/components/product/Action";
 
 function OrderDetails({ order, order_id, timeLeft, minutes, seconds, onSimulatePayment }: any) {
   //format timestamp
@@ -84,9 +85,10 @@ export default function CheckOutPage() {
   const params = useSearchParams();
   const router = useRouter();
   const order_id = params.get("order_id");
+  const TIME_LIMIT = 1 * 60;
 
   const [order, setOrder] = useState<any>(null);
-  const [timeLeft, setTimeLeft] = useState(1800); // 30 min
+  const [timeLeft, setTimeLeft] = useState(TIME_LIMIT); // 30 min
 
   // Countdown
   useEffect(() => {
@@ -97,7 +99,30 @@ export default function CheckOutPage() {
   }, []);
 
   useEffect(() => {
-    if (timeLeft === 0) alert("Time expired. Please try again.");
+    if (timeLeft === 0) {
+      const cancelOrder = async () => {
+        try {
+          const auth = await getAuth(); // ✅ await here
+                if (!auth?.email) return;
+          
+          const res = await fetch(`/api/order/${order_id}/cancel`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: auth.email,
+              order_id: order_id,
+            }),
+          });
+          if (!res.ok) throw new Error("Failed to cancel order");
+          alert("Time expired. Your order is CANCELLED! Please try again.");
+          router.push("/cart"); // redirect back to cart
+        } catch (err) {
+          console.error(err);
+          alert("Failed to cancel the order. Please refresh and try again.");
+        }
+      };
+      cancelOrder();
+    }
   }, [timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
