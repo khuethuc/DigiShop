@@ -51,34 +51,27 @@ export async function getProducts(
 ): Promise<Product[]> {
   await ensureSchema();
   const offset = (page - 1) * limit;
-<<<<<<< HEAD
-    if (!HAS_DB || !sql) {
-      // fallback to seed data
-      return seedProducts.slice(offset, offset + limit).map((p, i) => ({
-        product_id: offset + i + 1,
-        name: p.name,
-        image_url: p.image_url || "",
-        original_price: 0,
-        discount_price: null,
-        info: p.info || "",
-        order_fulfillment: p.order_fulfillment || "",
-        warranty_period: p.warranty_period || "",
-        warranty_method: p.warranty_method || "",
-      }));
-    }
+  
+  if (!HAS_DB || !sql) {
+    // fallback to seed data
+    const filtered = category 
+      ? seedProducts.filter(p => p.category_name === category)
+      : seedProducts;
+    return filtered.slice(offset, offset + limit).map((p, i) => ({
+      product_id: offset + i + 1,
+      name: p.name,
+      image_url: p.image_url || "",
+      original_price: 0,
+      discount_price: null,
+      info: p.info || "",
+      order_fulfillment: p.order_fulfillment || "",
+      warranty_period: p.warranty_period || "",
+      warranty_method: p.warranty_method || "",
+    }));
+  }
 
-    return await sql<Product[]>`
-      SELECT 
-        p.product_id,
-        p.name,
-        p.image_url,
-        MIN(pt.discount_price) AS discount_price,
-        MIN(pt.original_price) AS original_price
-      FROM product p
-      LEFT JOIN product_type pt ON p.product_id = pt.product_id
-=======
   if (category) {
-    return await sql`
+    return await sql<Product[]>`
       SELECT p.product_id,
              p.name,
              p.image_url,
@@ -88,15 +81,13 @@ export async function getProducts(
       LEFT JOIN product_type pt ON p.product_id = pt.product_id
       JOIN category c ON p.category_id = c.category_id
       WHERE c.name = ${category}
->>>>>>> origin/main
       GROUP BY p.product_id, p.name, p.image_url
       ORDER BY p.product_id
       LIMIT ${limit} OFFSET ${offset};
     `;
-<<<<<<< HEAD
-=======
   }
-  return await sql`
+
+  return await sql<Product[]>`
     SELECT p.product_id,
            p.name,
            p.image_url,
@@ -108,20 +99,17 @@ export async function getProducts(
     ORDER BY p.product_id
     LIMIT ${limit} OFFSET ${offset};
   `;
->>>>>>> origin/main
 }
 
 export async function getProductsCount(category?: string): Promise<number> {
   await ensureSchema();
-<<<<<<< HEAD
-   if (!HAS_DB || !sql) {
-     return seedProducts.length;
-   }
-   const [{ count }] = await sql<{ count: number }[]>`
-     SELECT COUNT(*)::int AS count FROM product
-   `;
-   return count;
-=======
+  if (!HAS_DB || !sql) {
+    const filtered = category 
+      ? seedProducts.filter(p => p.category_name === category)
+      : seedProducts;
+    return filtered.length;
+  }
+
   if (category) {
     const [{ count }] = await sql<{ count: number }[]>`
       SELECT COUNT(*)::int AS count
@@ -131,11 +119,11 @@ export async function getProductsCount(category?: string): Promise<number> {
     `;
     return count;
   }
+
   const [{ count }] = await sql<{ count: number }[]>`
     SELECT COUNT(*)::int AS count FROM product;
   `;
   return count;
->>>>>>> origin/main
 }
 
 export async function fetchProductData(
@@ -203,21 +191,16 @@ export async function getProductTypesByProductId(
   productId: number
 ): Promise<ProductTypeRow[]> {
   await ensureSchema();
-<<<<<<< HEAD
   if (!HAS_DB || !sql) {
     return [];
   }
-  const productTypes = await sql<ProductType[]>`
-    SELECT 
-=======
+  
   return await sql<ProductTypeRow[]>`
-    SELECT
->>>>>>> origin/main
-      product_type_id,
-      type,
-      original_price::float8   AS original_price,
-      discount_price::float8   AS discount_price,
-      stock
+    SELECT product_type_id,
+           type,
+           original_price,
+           discount_price,
+           stock
     FROM product_type
     WHERE product_id = ${productId}
     ORDER BY product_type_id;
