@@ -5,11 +5,11 @@ const sql = postgres(process.env.POSTGRES_URL!, { ssl: "require" });
 
 export async function GET(
   req: Request,
-  context: { params: { id: string } | Promise<{ id: string }> }
+  context: { params: { order_id: string } | Promise<{ order_id: string }> }
 ) {
   // unwrap params if it's a promise
   const { params } = context;
-  const { id: idStr } = await params; // <--- await here
+  const { order_id: idStr } = await params; // <--- await here
   const id = Number(idStr);
 
   if (Number.isNaN(id)) {
