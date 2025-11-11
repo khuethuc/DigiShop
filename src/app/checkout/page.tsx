@@ -47,6 +47,10 @@ export default function CheckOutPage() {
     router.push("/cart");
   };
 
+function OrderDetails({ order, order_id, timeLeft, minutes, seconds, onSimulatePayment }: any) {
+  //format timestamp
+  const createdDate = new Date(order.created_at);
+  
   return (
     <Box sx={{ p: { xs: 2, md: 5 }, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
       <Stack direction={{ xs: "column", md: "row" }} spacing={4} justifyContent="center">
@@ -156,5 +160,77 @@ export default function CheckOutPage() {
         </Box>
       </Stack>
     </Box>
+  );
+}
+
+export default function CheckOutPage() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const order_id = params.get("order_id");
+
+  const [order, setOrder] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState(1800); // 30 min
+
+  // Countdown
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) alert("Time expired. Please try again.");
+  }, [timeLeft]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = (timeLeft % 60).toString().padStart(2, "0");
+
+  const handleSimulatePayment = () => {
+    router.push(`/order/${order_id}/success`);
+  };
+
+  // Fetch order data
+  useEffect(() => {
+    async function fetchOrder() {
+      const res = await fetch(`/api/order/${order_id}`);
+      const data = await res.json();
+      setOrder(data);
+    }
+    if (order_id) fetchOrder();
+  }, [order_id]);
+
+  // Suspense-like fallback using skeletons
+  if (!order) {
+    return (
+      <Stack direction="row" justifyContent="center" spacing={6} sx={{ p: 5 }}>
+        <Stack spacing={4} alignItems="center">
+          <Skeleton variant="rectangular" width={250} height={250} />
+          <Skeleton width={150} height={30} />
+          <Skeleton width={100} height={30} />
+          <Skeleton variant="rectangular" width={200} height={50} />
+        </Stack>
+        <Stack spacing={2}>
+          <Skeleton width={150} height={50} />
+          <Skeleton width={200} height={30} />
+          <Skeleton width={250} height={20} />
+          <Skeleton width={300} height={20} />
+          <Skeleton width={200} height={20} />
+        </Stack>
+      </Stack>
+    );
+  }
+
+  return (
+    <Suspense fallback={<p>Loading order...</p>}>
+      <OrderDetails
+        order={order}
+        order_id={order_id}
+        timeLeft={timeLeft}
+        minutes={minutes}
+        seconds={seconds}
+        onSimulatePayment={handleSimulatePayment}
+      />
+    </Suspense>
   );
 }

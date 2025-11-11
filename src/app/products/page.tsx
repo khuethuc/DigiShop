@@ -4,10 +4,17 @@ import { Pagination, Stack, Box, Skeleton } from "@mui/material";
 import ProductCard from "@/components/product/ProductCard";
 import CardSkeleton from "@/components/product/CardSkeleton";
 import { fetchProductData } from "@/app/lib/product-action";
+import ProductPagination from "@/components/product/ProductPagination";
+
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
+export const metadata = {
+  title: "Products",
+  description:
+    "Product List of all available items",
+};
 
 type Props = {
   searchParams: Promise<{
@@ -70,13 +77,7 @@ async function ProductGrid({
         ))}
       </Box>
       <Stack spacing={2} direction="row" justifyContent="center" my={4}>
-        <Pagination
-          count={totalPages}
-          page={page}
-          color="primary"
-          siblingCount={1}
-          boundaryCount={1}
-        />
+        <ProductPagination page={page} totalPages={totalPages} />
       </Stack>
     </>
   );

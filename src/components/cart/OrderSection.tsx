@@ -96,7 +96,7 @@ export default function OrderSection({ products }: OrderSectionProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: auth.email, // ensure getAuth() includes user_id or adapt
+          email: auth.email,
           payment_method: "vietqr",
           total_val: total,
           products: products.map((p) => ({
@@ -109,11 +109,9 @@ export default function OrderSection({ products }: OrderSectionProps) {
       if (!res.ok) throw new Error("Order creation failed");
       const data = await res.json();
 
-      // ✅ Redirect to checkout page with QR info
+      // ✅ Redirect to checkout page with orderid
       router.push(
-        `/checkout?order_id=${data.order_id}&vietqr_url=${encodeURIComponent(
-          data.vietqrUrl
-        )}&note=${encodeURIComponent(data.note)}&amount=${data.total_val}`
+        `/checkout?order_id=${data.order_id}`
       );
     } catch (err) {
       console.error(err);
@@ -284,13 +282,14 @@ export default function OrderSection({ products }: OrderSectionProps) {
           fontWeight: 700,
           borderRadius: 1,
           "&:hover": { bgcolor: "#f2f2f2" },
-          width: 100,
+          maxWidth: 300,
+          width: "fit-content",
           alignSelf: "center",
         }}
         disabled={loading}
         onClick={handleConfirm}
       >
-        {loading ? "..." : "Confirm"}
+        {loading ? "Making order ..." : "Confirm"}
       </Button>
     </Stack>
   );
