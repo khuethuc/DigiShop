@@ -19,7 +19,7 @@ export default function ChatWidget() {
       const greeting: Msg = {
         id: String(Date.now()),
         role: "assistant",
-        text: "Hi! Welcome to DigiShop 👋 How can I help you today?",
+        text: "Hi! Welcome to DigiShop 👋\n How can I help you today?",
       };
       setMsgs([greeting]);
       setTimeout(() => listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }), 100);
@@ -84,7 +84,9 @@ export default function ChatWidget() {
               justifyContent: "space-between",
             }}
           >
-            <Typography variant="subtitle1">DigiShop Help</Typography>
+            <Typography variant="subtitle1" sx={{fontWeight: 600, fontSize: 19, marginLeft: 2}}>
+              DigiShop Help
+            </Typography>
             <IconButton size="small" onClick={() => setOpen(false)}>
               <X size={16} />
             </IconButton>

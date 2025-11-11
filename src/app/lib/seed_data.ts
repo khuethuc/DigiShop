@@ -30,7 +30,7 @@ export const products = [
     warranty_method: 'Replacement with an equivalent product or a refund based on the unused remaining time.\n\nWarranty Conditions:\n- Full refund within 7 days if the issue cannot be resolved.\n- After 7 days: Refund based on the unused remaining period. (Example: For a 30-day plan, if an issue occurs after 10 days of use, you receive a 66% refund of the order value.)\n\nWarranty Will Not Apply In The Following Cases:\n- The customer cancels the subscription or deletes a profile.\n- The customer attempts to modify the account email, password, or billing information.\n- The customer uses the account in a way that violates Netflix\'s Terms of Service, including downloading or unauthorized sharing of content.',
   },
   { 
-    name: 'Disney+ Account', 
+    name: 'Disney Plus Account', 
     category_name: 'Streaming', 
     image_url: '/products/disneyplus.jpeg',
     info: 'This is a shared account for the highest Disney+ plan available, featuring 4K streaming and simultaneous viewing, subject to shared usage rules.\nEach user is assigned a designated profile to manage their viewing history.\nModifying the account\'s primary details (email, password) is strictly prohibited and will void the warranty. Only one active stream is permitted per customer.',
@@ -185,7 +185,7 @@ export const products = [
   { 
     name: 'Windows 10 Pro', 
     category_name: 'Software Licenses', 
-    image_url: '/products/windows10.png',
+    image_url: '/products/windows10.webp',
     info: 'A genuine, single-use digital product key (OEM or Retail) for activating Windows 10 Pro.\nThe key is valid for one activation on one computer only.\nCustomers are responsible for having the correct edition (Pro) and a clean installation of Windows 10 before attempting activation.',
     order_fulfillment: 'A unique 25-character Windows 10 Pro product key.\nUpon successful payment, the key will be immediately displayed on the order confirmation page.\nDelivery: Instant key delivery.\nEnter the key into the Windows Activation settings on your PC to activate the operating system.',
     warranty_period: 'Lifetime Activation (subject to Microsoft terms). Product Warranty: 30 days.',
@@ -221,7 +221,7 @@ export const products = [
   { 
     name: 'Premiere Pro', 
     category_name: 'Software Licenses', 
-    image_url: '/products/premiere.png',
+    image_url: '/products/premiere.jpg',
     info: 'Access to Adobe Premiere Pro via a Creative Cloud Team or Shared account model.\nAllows full use of the video editing software.\nUsers must adhere to the terms of the shared account and avoid modifications to the primary Adobe ID.',
     order_fulfillment: 'Adobe Premiere Pro access (1-month) via a team invitation.\nInstant delivery of the invitation link and instructions after successful payment.\nDelivery: Instant link delivery.\nAccept the invitation with your Adobe ID to gain access to Premiere Pro within the Creative Cloud suite.',
     warranty_period: 'Same as your selected package (e.g., 1-month).',

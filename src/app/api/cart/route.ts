@@ -41,7 +41,12 @@ export async function POST(req: Request) {
       quantity: item.quantity,
     }));
 
-    return NextResponse.json(products);
+    // ✅ Include total count in response
+    return NextResponse.json({
+      ok: true,
+      count: products.length,
+      products,
+    });  
   } catch (e) {
     console.error("GET /api/cart error:", e);
     return NextResponse.json({ ok: false, error: "Internal Server Error" }, { status: 500 });

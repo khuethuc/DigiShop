@@ -3,7 +3,7 @@ import { Stack, Box, Typography, Divider } from "@mui/material";
 import KeywordTag from "@/components/home/KeywordTag";
 import PackageSelector from "@/components/product/PackageSelector";
 import Actions from "@/components/product/Action";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export type MainInfoProps = {
   title: string;
@@ -13,7 +13,12 @@ export type MainInfoProps = {
   original_price: number;
   max_discount_price: number | null;
   max_original_price: number | null;
-  types: { id: number; name: string }[];  //an array store all names of package types of a product
+  types: {
+    id: number;
+    name: string;
+    discount_price: number | null;
+    original_price: number;
+  }[];
 };
 
 export default function MainInfo(props: MainInfoProps) {
@@ -23,22 +28,59 @@ export default function MainInfo(props: MainInfoProps) {
     category,
     discount_price,
     original_price,
-    max_discount_price,
-    max_original_price,
+    //max_discount_price,
+   // max_original_price,
     types,
   } = props;
 
-  const validMaxOriginalPrice =
-    max_original_price !== undefined ? max_original_price : null;
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
 
-  // ✅ NEW: store selected type ID
-  const [selectedTypeId, setSelectedTypeId] = useState<number | string | null>(
-    null
-  );
+  // Compute displayed prices depending on current selection and types
+  const displayPrice = useMemo(() => {
+    // 🟢 Case 1: No types — use the product-level prices
+    if (!types || types.length === 0) {
+      return {
+        discount: discount_price,
+        original: original_price,
+      };
+    }
+
+    // 🟢 Case 2: Only one type — show its price directly
+    if (types.length === 1) {
+      const t = types[0];
+      return {
+        discount: t.discount_price,
+        original: t.original_price,
+      };
+    }
+
+    // 🟢 Case 3: Multiple types
+    const selected = types.find((t) => t.id === selectedTypeId);
+    if (selected) {
+      // A specific type is selected → show its own price
+      return {
+        discount: selected.discount_price,
+        original: selected.original_price,
+      };
+    }
+
+    // No type selected → show range (min–max)
+    const validDiscounts = types.map((t) => t.discount_price ?? t.original_price);
+    const minDiscount = Math.min(...validDiscounts);
+    const maxDiscount = Math.max(...validDiscounts);
+    const minOriginal = Math.min(...types.map((t) => t.original_price));
+    const maxOriginal = Math.max(...types.map((t) => t.original_price));
+
+    return {
+      discount: minDiscount,
+      discountMax: maxDiscount > minDiscount ? maxDiscount : null,
+      original: minOriginal,
+      originalMax: maxOriginal > minOriginal ? maxOriginal : null,
+    };
+  }, [selectedTypeId, types, discount_price, original_price]);
 
   return (
     <Stack spacing={2.5}>
-      {/* Main Info Section */} 
       <Box>
         <Typography
           variant="h1"
@@ -48,7 +90,7 @@ export default function MainInfo(props: MainInfoProps) {
         </Typography>
 
         <Typography variant="body1" gutterBottom>
-          Status: {quantity > 0 ? "In Stock" : "Out of stock"}
+          Status: {quantity > 0 ? "In Stock" : "Out of Stock"}
         </Typography>
 
         <Stack direction="row" sx={{ marginBottom: 2 }}>
@@ -58,34 +100,44 @@ export default function MainInfo(props: MainInfoProps) {
           <KeywordTag label={category} size="md" mgLeft={3} />
         </Stack>
 
+        {/* Price Section */}
         <Stack direction="row" spacing={5} mb={2}>
-          {/* Discount Price */}
-          {discount_price || max_discount_price ? (
+          {/* Discount or Final Price */}
+          {displayPrice.discount != null && (
             <Typography
               fontWeight={700}
-              sx={{ fontSize: { xs: 13, sm: 15, md: 17, lg: 18 }, color: "red" }}
+              sx={{
+                fontSize: { xs: 13, sm: 15, md: 17, lg: 18 },
+                color: "red",
+              }}
             >
-              {discount_price ? discount_price.toLocaleString("en-US") : "-"} ₫
-              {max_discount_price
-                ? ` - ${max_discount_price.toLocaleString("en-US")} ₫`
-                : ""}
+              {displayPrice.discount.toLocaleString("en-US")} ₫
+              {displayPrice.discountMax && (
+                <>
+                  {" - "}
+                  {displayPrice.discountMax.toLocaleString("en-US")} ₫
+                </>
+              )}
             </Typography>
-          ) : null}
+          )}
 
           {/* Original Price */}
-          {original_price ? (
+          {displayPrice.original != null && (
             <Typography
               color="textDisabled"
               sx={{ textDecoration: "line-through" }}
             >
-              {original_price.toLocaleString("en-US")} ₫
-              {validMaxOriginalPrice !== null
-                ? ` - ${validMaxOriginalPrice.toLocaleString("en-US")} ₫`
-                : ""}
+              {displayPrice.original.toLocaleString("en-US")} ₫
+              {displayPrice.originalMax && (
+                <>
+                  {" - "}
+                  {displayPrice.originalMax.toLocaleString("en-US")} ₫
+                </>
+              )}
             </Typography>
-          ) : null}
+          )}
         </Stack>
-      </Box>      
+      </Box>
 
       <Divider sx={{ borderColor: "#68686880", borderBottomWidth: 1 }} />
 
@@ -94,10 +146,7 @@ export default function MainInfo(props: MainInfoProps) {
         {types && types.length > 0 ? (
           <PackageSelector
             options={types}
-            onSelect={(pkg) => {
-              console.log("Selected:", pkg);
-              setSelectedTypeId(pkg.id); // ✅ save the selected type
-            }}
+            onSelect={(pkg) => setSelectedTypeId(pkg.id)}
           />
         ) : (
           <Typography variant="body1" color="textSecondary">
@@ -108,9 +157,8 @@ export default function MainInfo(props: MainInfoProps) {
 
       <Divider sx={{ borderColor: "#68686880", borderBottomWidth: 1 }} />
 
-      {/* Actions */}
+      {/* Actions (Add to Cart, etc.) */}
       <Box>
-        {/* ✅ NOW PASS THE SELECTED TYPE */}
         <Actions productTypeId={selectedTypeId} />
       </Box>
     </Stack>

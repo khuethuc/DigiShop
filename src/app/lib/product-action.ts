@@ -128,16 +128,16 @@ export async function getProductByName(name: string): Promise<Product | null> {
     };
   }
 
-  const [product] = await sql<Product[]>`
+const [product] = await sql<Product[]>`
     SELECT 
       p.product_id,
       p.name,
       p.image_url,
-      MIN(pt.discount_price) AS discount_price,
-      MIN(pt.original_price) AS original_price,
-      MAX(pt.original_price) AS max_original_price,
-      MIN(pt.discount_price) AS max_discount_price,
-      MIN(pt.stock) AS stock,
+      MIN(pt.discount_price)::int AS discount_price,
+      MIN(pt.original_price)::int AS original_price,
+      MAX(pt.original_price)::int AS max_original_price,
+      MAX(pt.discount_price)::int AS max_discount_price,
+      MIN(pt.stock)::int AS stock,
       p.info,
       p.order_fulfillment,
       p.warranty_period,
@@ -167,8 +167,8 @@ export async function getProductTypesByProductId(
     SELECT
       product_type_id,
       type,
-      original_price::float8   AS original_price,
-      discount_price::float8   AS discount_price,
+      original_price::int   AS original_price,
+      discount_price::int   AS discount_price,
       stock
     FROM product_type
     WHERE product_id = ${productId}

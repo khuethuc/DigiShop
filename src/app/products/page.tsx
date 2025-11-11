@@ -57,7 +57,7 @@ async function ProductGrid({
         {products.map((p) => (
           <Link
             key={p.product_id}
-            href={`/products/${p.name.toLowerCase().replace(/\s+/g, "-")}`}
+            href={`/products/${p.name.toLowerCase().replace(/\s/g, "-")}`}
             style={{ textDecoration: "none" }}
           >
             <ProductCard

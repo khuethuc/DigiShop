@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Stack, Typography, Divider, Alert, Box } from "@mui/material";
+import { useEffect, useState, Suspense } from "react";
+import { Stack, Typography, Divider, Alert, Box, Skeleton } from "@mui/material";
 import BigProductCard from "@/components/cart/BigProductCard";
 import OrderSection from "@/components/cart/OrderSection";
 import { getAuth } from "@/components/product/Action";
 import { useRouter } from "next/navigation";
-
 
 interface Product {
   product_id: number;
@@ -19,14 +18,18 @@ interface Product {
   quantity: number;
 }
 
-export default function CartPage() {
+function CartContent() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cartCount, setCartCount] = useState<number>(1); // default 1 skeleton
+
 
   useEffect(() => {
-    const token = localStorage.getItem("digishop_auth") || sessionStorage.getItem("digishop_auth");
+    const token =
+      localStorage.getItem("digishop_auth") ||
+      sessionStorage.getItem("digishop_auth");
 
     if (!token) {
       setLoggedIn(false);
@@ -39,25 +42,25 @@ export default function CartPage() {
 
     const auth = getAuth();
     if (!auth?.email && !auth?.username) {
-        router.push("/login");
-        return;
+      router.push("/login");
+      return;
     }
-
 
     fetch("/api/cart", {
       method: "POST",
-      headers: { "Content-Type": "application/json"},
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-          email: auth.email,
-          username: auth.username,
-        }),
+        email: auth.email,
+        username: auth.username,
+      }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch cart");
         return res.json();
       })
       .then((data) => {
-        setProducts(data);
+        setProducts(data.products);
+        setCartCount(data.count);
       })
       .catch((err) => {
         console.error(err);
@@ -66,58 +69,90 @@ export default function CartPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Typography>Loading cart...</Typography>;
+  if (loading) return <CartSkeleton count={cartCount} />;
   if (!loggedIn) return null;
 
   return (
     <Box sx={{ px: 10, py: 5, width: "100vw", boxSizing: "border-box" }}>
-    <Typography variant="h1" sx={{ fontSize: 70, fontWeight: 600 }}>
+      <Typography variant="h1" sx={{ fontSize: 70, fontWeight: 600 }}>
         Cart
-    </Typography>
-    <Divider sx={{ my: 4, borderBottomWidth: 2 }} />
+      </Typography>
+      <Divider sx={{ my: 4, borderBottomWidth: 2 }} />
 
-    <Stack
+      <Stack
         direction="row"
         spacing={4}
         sx={{
-        width: "100%",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        flexWrap: "nowrap",
+          width: "100%",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          flexWrap: "nowrap",
         }}
-    >
+      >
         {/* LEFT COLUMN — product cards */}
         <Stack
-        spacing={4}
-        sx={{
+          spacing={4}
+          sx={{
             flexBasis: "65%",
             flexGrow: 1,
-        }}
+          }}
         >
-        {products.length === 0 && <Alert severity="info">Your cart is empty!</Alert>}
-        {products.map((p) => (
+          {products.length === 0 && (
+            <Alert severity="info">Your cart is empty!</Alert>
+          )}
+          {products.map((p) => (
             <BigProductCard
-            key={p.product_type_id}
-            title={p.title}
-            type={p.type}
-            image={p.image}
-            price={p.price}
-            oldPrice={p.oldPrice}
-            quantity={p.quantity}
+              key={p.product_type_id}
+              title={p.title}
+              type={p.type}
+              image={p.image}
+              price={p.price}
+              oldPrice={p.oldPrice}
+              quantity={p.quantity}
             />
-        ))}
+          ))}
         </Stack>
 
         {/* RIGHT COLUMN — order summary */}
         <Box
-        sx={{
+          sx={{
             flexBasis: "30%",
             flexGrow: 1,
-        }}
+          }}
         >
-        <OrderSection products={products}/>
+          <OrderSection products={products} />
         </Box>
-    </Stack>
+      </Stack>
     </Box>
+  );
+}
+
+/* 🦴 Skeleton Loader Component */
+function CartSkeleton({ count = 1 }: { count?: number }) {
+  return (
+    <Box sx={{ px: 10, py: 5, width: "100vw", boxSizing: "border-box" }}>
+      <Skeleton variant="text" width={300} height={80} />
+      <Divider sx={{ my: 4, borderBottomWidth: 2 }} />
+      <Stack direction="row" spacing={4}>
+        <Stack spacing={4} sx={{ flexBasis: "65%" }}>
+          {[...Array(count)].map((_, i) => (
+            <Box key={i}>
+              <Skeleton variant="rectangular" height={150} sx={{ borderRadius: 2 }} />
+            </Box>
+          ))}
+        </Stack>
+        <Box sx={{ flexBasis: "30%" }}>
+          <Skeleton variant="rectangular" height={450} sx={{ borderRadius: 2 }} />
+        </Box>
+      </Stack>
+    </Box>
+  );
+}
+
+export default function CartPage() {
+  return (
+    <Suspense fallback={<CartSkeleton />}>
+      <CartContent />
+    </Suspense>
   );
 }

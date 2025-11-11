@@ -14,7 +14,7 @@ type PageProps = {
 };
 
 export const metadata = {
-  title: "Product Diletal",
+  title: "Product Detail",
   description:
     "Product Detail of a selected product",
 };
@@ -24,7 +24,11 @@ export default async function ProductDetail(props: PageProps) {
   const { name } = await params;
   const formattedName = name.replace(/-/g, " ");
   let product: any,
-    product_types: { product_type_id: number, type: string }[] = [],
+    product_types: 
+    { product_type_id: number, 
+      type: string,
+      original_price: number,
+      discount_price:number|null }[] = [],
     category = "Uncategorized"; // Default fallback
 
   try {
@@ -90,6 +94,8 @@ export default async function ProductDetail(props: PageProps) {
             types={product_types.map((p) => ({
                   id: p.product_type_id,
                   name: p.type,
+                  original_price: Number(p.original_price),
+                  discount_price: p.discount_price !== null ? Number(p.discount_price) : null,
             }))}
             max_discount_price={product.max_discount_price || null}
             max_original_price={product.max_original_price || null} // Ensuring max_original_price is never undefined
