@@ -7,7 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme";
 import Header from "./Header";
 import Footer from "./Footer";
-import ChatWidget from "@/components/chat/ChatWidget";
+import ChatWidget from "@/components/chat/ChatWidgetClient";
 
 type MainLayoutProps = {
   children: React.ReactNode;
