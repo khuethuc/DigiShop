@@ -51,6 +51,24 @@ export async function getProducts(
 ): Promise<Product[]> {
   await ensureSchema();
   const offset = (page - 1) * limit;
+  if (!HAS_DB || !sql) {
+    const filtered = category
+      ? seedProducts.filter(
+          (p) => p.category_name?.toLowerCase() === category.toLowerCase()
+        )
+      : seedProducts;
+    return filtered.slice(offset, offset + limit).map((p, i) => ({
+      product_id: offset + i + 1,
+      name: p.name,
+      image_url: p.image_url || "",
+      original_price: 0,
+      discount_price: null,
+      info: p.info || "",
+      order_fulfillment: p.order_fulfillment || "",
+      warranty_period: p.warranty_period || "",
+      warranty_method: p.warranty_method || "",
+    }));
+  }
   if (category) {
     return await sql`
       SELECT p.product_id,
@@ -83,6 +101,14 @@ export async function getProducts(
 
 export async function getProductsCount(category?: string): Promise<number> {
   await ensureSchema();
+  if (!HAS_DB || !sql) {
+    const filtered = category
+      ? seedProducts.filter(
+          (p) => p.category_name?.toLowerCase() === category.toLowerCase()
+        )
+      : seedProducts;
+    return filtered.length;
+  }
   if (category) {
     const [{ count }] = await sql<{ count: number }[]>`
       SELECT COUNT(*)::int AS count
@@ -163,6 +189,18 @@ export async function getProductTypesByProductId(
   productId: number
 ): Promise<ProductTypeRow[]> {
   await ensureSchema();
+  if (!HAS_DB || !sql) {
+    const seed = seedProducts[productId - 1];
+    const types: ProductType[] =
+      (seed as any)?.product_types || (seed as any)?.types || [];
+    return types.map((t, i) => ({
+      product_type_id: i + 1,
+      type: t.type,
+      original_price: (t as any).original_price ?? 0,
+      discount_price: (t as any).discount_price ?? null,
+      stock: (t as any).stock ?? null,
+    }));
+  }
   return await sql<ProductTypeRow[]>`
     SELECT
       product_type_id,

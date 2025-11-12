@@ -37,7 +37,6 @@ export default function OrderSection({ products }: OrderSectionProps) {
   const router = useRouter();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
-
   useEffect(() => {
     const subtotalValue = products.reduce(
       (acc, item) => acc + item.price * item.quantity,
@@ -45,7 +44,9 @@ export default function OrderSection({ products }: OrderSectionProps) {
     );
     setSubtotal(subtotalValue);
 
-    const discountValue = discountApplied ? subtotalValue * DISCOUNT_PERCENT : 0;
+    const discountValue = discountApplied
+      ? subtotalValue * DISCOUNT_PERCENT
+      : 0;
     setDiscount(discountValue);
     setTotal(subtotalValue - discountValue);
   }, [products, discountApplied]);
@@ -71,7 +72,9 @@ export default function OrderSection({ products }: OrderSectionProps) {
       return;
     }
 
-    const token = localStorage.getItem("digishop_auth") || sessionStorage.getItem("digishop_auth");
+    const token =
+      localStorage.getItem("digishop_auth") ||
+      sessionStorage.getItem("digishop_auth");
 
     if (!token) {
       setLoggedIn(false);
@@ -84,8 +87,8 @@ export default function OrderSection({ products }: OrderSectionProps) {
 
     const auth = getAuth();
     if (!auth?.email && !auth?.username) {
-        router.push("/login");
-        return;
+      router.push("/login");
+      return;
     }
 
     try {
@@ -110,9 +113,7 @@ export default function OrderSection({ products }: OrderSectionProps) {
       const data = await res.json();
 
       // ✅ Redirect to checkout page with orderid
-      router.push(
-        `/checkout?order_id=${data.order_id}`
-      );
+      router.push(`/checkout?order_id=${data.order_id}`);
     } catch (err) {
       console.error(err);
       alert("Failed to create order!");

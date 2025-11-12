@@ -1,4 +1,10 @@
-import { useTheme, useMediaQuery, OutlinedInput, InputAdornment } from "@mui/material";
+"use client";
+import {
+  useTheme,
+  useMediaQuery,
+  OutlinedInput,
+  InputAdornment,
+} from "@mui/material";
 import { Search } from "lucide-react";
 
 export default function SearchBar() {
@@ -25,7 +31,7 @@ export default function SearchBar() {
           borderColor: "divider",
         },
         "& input": {
-          fontSize, // 👈 placeholder and input text size
+          fontSize,
         },
       }}
     />
